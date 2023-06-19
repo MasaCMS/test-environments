@@ -1,0 +1,36 @@
+version: '3.5'
+
+services:
+  # Masa CMS Server
+  masa_mariadb_cfml:
+    image: lucee/lucee:5.3
+    depends_on:
+      - masa_mariadb
+    env_file: ../.env
+    environment:
+      MURA_DBTYPE: mysql
+      MURA_DBCONNECTIONSTRING: "jdbc:mysql://masa_mariadb:3306/masadb?useUnicode=true&characterEncoding=UTF-8&useLegacyDatetimeCode=true"
+      MURA_DBCLASS: com.mysql.jdbc.Driver
+      MURA_DBUSERNAME: root
+      MURA_DBPASSWORD: rootpassword
+      MURA_DBHOST: masa_mariadb
+      MURA_DBPORT: 3306
+    volumes:
+      - ../../masacms:/var/www
+      - ../common/password.txt:/opt/lucee/server/lucee-server/context/password.txt
+    ports:
+      - "80:8888"
+
+  # MariaDB
+  masa_mariadb:
+    image: mariadb:latest
+    environment:
+        MYSQL_ROOT_PASSWORD: rootpassword
+        MYSQL_DATABASE: masadb
+    volumes:
+        - masa_mariadb_data:/var/lib/mysql
+    ports:
+        - "3306:3306"
+
+volumes:
+    masa_mariadb_data:
