@@ -1,10 +1,11 @@
-version: '3.5'
+version: "3.5"
 
 services:
   # Masa CMS Server
   masamysqlcfml:
     build:
-      dockerfile: Dockerfile.2021
+      dockerfile: Dockerfile.2023
+      target: cf23
     depends_on:
       - masamysql
     env_file: ../.env
@@ -16,7 +17,7 @@ services:
       MURA_DBPASSWORD: rootpassword
       MURA_DBHOST: masamysql
       MURA_DBPORT: 3306
-      installModules: debugger,mysql
+      installModules: debugger,mysql,caching,image,mail,zip
     volumes:
       - ../../masacms:/app
     ports:
@@ -26,12 +27,12 @@ services:
   masamysql:
     image: mysql:latest
     environment:
-        MYSQL_ROOT_PASSWORD: rootpassword
-        MYSQL_DATABASE: masadb
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: masadb
     volumes:
-        - masamysqldata:/var/lib/mysql
+      - masamysqldata:/var/lib/mysql
     ports:
-        - "3306:3306"
+      - "3306:3306"
 
 volumes:
-    masamysqldata:
+  masamysqldata:
