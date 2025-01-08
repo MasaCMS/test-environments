@@ -1,10 +1,9 @@
-version: '3.5'
-
 services:
   # Masa CMS Server
   masamariadbcfml:
     build:
-      dockerfile: Dockerfile.2021
+      dockerfile: Dockerfile
+      target: cf23
     depends_on:
       - masamariadb
     env_file: ../.env
@@ -16,7 +15,7 @@ services:
       MURA_DBPASSWORD: rootpassword
       MURA_DBHOST: masamariadb
       MURA_DBPORT: 3306
-      installModules: debugger,mysql
+      installModules: debugger,mysql,caching,image,mail,zip
     volumes:
       - ../../masacms:/app
     ports:
