@@ -1,0 +1,21 @@
+services:
+  # MySQL
+  masa_mysql:
+    image: mysql:latest
+    environment:
+        MYSQL_ROOT_PASSWORD: rootpassword
+        MYSQL_DATABASE: masadb
+    networks:
+      - masa-test
+    volumes:
+        - masa_mysql_data:/var/lib/mysql
+    ports:
+        - "3306:3306"
+
+volumes:
+    masa_mysql_data:
+
+networks:
+  masa-test:
+    name: masa-test
+    driver: bridge

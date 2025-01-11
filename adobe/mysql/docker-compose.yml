@@ -1,11 +1,9 @@
 services:
   # Masa CMS Server
-  masamysqlcfml:
+  masa-mysql-acf:
     build:
       dockerfile: Dockerfile
       target: cf23
-    depends_on:
-      - masamysql
     env_file: ../.env
     environment:
       MURA_DBTYPE: mysql
@@ -16,21 +14,14 @@ services:
       MURA_DBHOST: masamysql
       MURA_DBPORT: 3306
       installModules: debugger,mysql,caching,image,mail,zip
+    networks:
+      - masa-test
     volumes:
       - ../../masacms:/app
     ports:
       - "80:8500"
 
-  # MySQL
-  masamysql:
-    image: mysql:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: masadb
-    volumes:
-      - masamysqldata:/var/lib/mysql
-    ports:
-      - "3306:3306"
-
-volumes:
-  masamysqldata:
+networks:
+  masa-test:
+    name: masa-test
+    external: true
