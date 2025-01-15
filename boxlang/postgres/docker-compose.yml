@@ -1,0 +1,27 @@
+services:
+  # Masa CMS Server
+  masa_postgres_boxlang:
+    image: ortussolutions/boxlang:miniserver
+    env_file: ../.env
+    environment:
+      MURA_DBTYPE: postgresql
+      MURA_DBCONNECTIONSTRING: "jdbc:postgresql://masa_postgres:5432/masadb"
+      MURA_DBCLASS: org.postgresql.Driver
+      MURA_DBUSERNAME: root
+      MURA_DBPASSWORD: rootpassword
+      MURA_DBHOST: masa_postgres
+      MURA_DBPORT: 5432
+      # Disabled because bx-compat-cfml doesn't load: https://community.ortussolutions.com/t/docker-miniserver-and-bx-compat-cfml-installation/10532/1
+      # BOXLANG_MODULES: bx-compat-cfml,bx-esapi,bx-mysql,bx-ini,bx-unsafe-evaluate
+      BOXLANG_MODULES: bbx-esapi,bx-mysql,bx-ini,bx-unsafe-evaluate
+    networks:
+      - masa-test
+    volumes:
+      - ../../masacms:/app
+    ports:
+      - "18282:8080"
+
+networks:
+  masa-test:
+    name: masa-test
+    external: true
