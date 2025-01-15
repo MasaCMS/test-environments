@@ -1,7 +1,7 @@
 services:
   # Masa CMS Server
-  masa_mariadb_lucee:
-    image: lucee/lucee:latest
+  masa_mariadb_boxlang:
+    image: ortussolutions/boxlang:miniserver
     env_file: ../.env
     environment:
       MURA_DBTYPE: mysql
@@ -11,13 +11,13 @@ services:
       MURA_DBPASSWORD: rootpassword
       MURA_DBHOST: masa_mariadb
       MURA_DBPORT: 3307
+      BOXLANG_MODULES: bx-compat,bx-esapi,bx-mariadb,bx-ini
     networks:
       - masa-test
     volumes:
-      - ../../masacms:/var/www
-      - ../common/password.txt:/opt/lucee/server/lucee-server/context/password.txt
+      - ../../masacms:/app
     ports:
-      - "18180:8888"
+      - "18280:8080"
 
 networks:
   masa-test:

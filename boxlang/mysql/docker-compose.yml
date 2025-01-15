@@ -1,7 +1,7 @@
 services:
   # Masa CMS Server
-  masa_mysql_lucee:
-    image: lucee/lucee:latest
+  masa_mysql_boxlang:
+    image: ortussolutions/boxlang:miniserver
     env_file: ../.env
     environment:
       MURA_DBTYPE: mysql
@@ -11,13 +11,15 @@ services:
       MURA_DBPASSWORD: rootpassword
       MURA_DBHOST: masa_mysql
       MURA_DBPORT: 3306
+      # Disabled because bx-compat-cfml doesn't load: https://community.ortussolutions.com/t/docker-miniserver-and-bx-compat-cfml-installation/10532/1
+      # BOXLANG_MODULES: bx-compat-cfml,bx-esapi,bx-mysql,bx-ini,bx-unsafe-evaluate
+      BOXLANG_MODULES: bbx-esapi,bx-mysql,bx-ini,bx-unsafe-evaluate
     networks:
       - masa-test
     volumes:
-      - ../../masacms:/var/www
-      - ../common/password.txt:/opt/lucee/server/lucee-server/context/password.txt
+      - ../../masacms:/app
     ports:
-      - "18181:8888"
+      - "18281:8080"
 
 networks:
   masa-test:

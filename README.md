@@ -9,11 +9,19 @@ These are test environments for Masa CMS.
 
 * MariaDB
 * MySQL
+* PostgreSQL
 
 ### Lucee
 
 * MariaDB
 * MySQL
+* PostgreSQL
+
+### Boxlang
+
+* MariaDB
+* MySQL
+* PostgreSQL
 
 ## Requirements
 
@@ -25,9 +33,32 @@ These are test environments for Masa CMS.
 ## Start environment
 
 * Clone Masa CMS into this project: `git clone git@github.com:MasaCMS/MasaCMS.git masacms`
-* Open a terminal and navigate to the folder of the desired environment
-* Start the environment: `docker compose up -d
-* Open `http://localhost` in the browser
+* Open a terminal
+* Navigate to the folder of the desired database (for example: /mariadb/)
+* Start the database: `docker compose up -d
+* Navigate to the folder of the desired cfml engine (for example: /lucee/mariadb/)
+* Start the cfml engine: `docker compose up -d
+* Open `http://localhost:{portnumber}` in the browser
+
+### Port numbers
+
+#### Adobe ColdFusion
+
+* mariadb: 18080
+* mysql: 18081
+* postgres: 18082
+
+#### Lucee
+
+* mariadb: 18180
+* mysql: 18181
+* postgres: 18182
+
+#### Boxlang
+
+* mariadb: 18280
+* mysql: 18281
+* postgres: 18282
 
 ## Run test suite
 
