@@ -1,0 +1,25 @@
+services:
+  # Masa CMS Server
+  masa_postgres_acf:
+    image: adobecoldfusion/coldfusion:latest-2023
+    env_file: ../.env
+    environment:
+      MURA_DBTYPE: postgresql
+      MURA_DBCONNECTIONSTRING: "jdbc:postgresql://masa_postgres:5432/masadb"
+      MURA_DBCLASS: org.postgresql.Driver
+      MURA_DBUSERNAME: root
+      MURA_DBPASSWORD: rootpassword
+      MURA_DBHOST: masa_postgres
+      MURA_DBPORT: 5432
+      installModules: debugger,postgresql,caching,image,mail,zip
+    networks:
+      - masa-test
+    volumes:
+      - ../../masacms:/app
+    ports:
+      - "18082:8500"
+
+networks:
+  masa-test:
+    name: masa-test
+    external: true

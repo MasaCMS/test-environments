@@ -1,0 +1,25 @@
+services:
+  # Masa CMS Server
+  masa_postgres_cfml:
+    image: lucee/lucee:latest
+    env_file: ../.env
+    environment:
+      MURA_DBTYPE: postgresql
+      MURA_DBCONNECTIONSTRING: "jdbc:postgresql://masa_postgres:5432/masadb"
+      MURA_DBCLASS: org.postgresql.Driver
+      MURA_DBUSERNAME: root
+      MURA_DBPASSWORD: rootpassword
+      MURA_DBHOST: masa_postgres
+      MURA_DBPORT: 5432
+    networks:
+      - masa-test
+    volumes:
+      - ../../masacms:/var/www
+      - ../common/password.txt:/opt/lucee/server/lucee-server/context/password.txt
+    ports:
+      - "18182:8888"
+
+networks:
+  masa-test:
+    name: masa-test
+    external: true
