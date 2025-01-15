@@ -7,19 +7,19 @@ services:
     env_file: ../.env
     environment:
       MURA_DBTYPE: mysql
-      MURA_DBCONNECTIONSTRING: "jdbc:mysql://masamariadb:3306/masadb"
+      MURA_DBCONNECTIONSTRING: "jdbc:mysql://masa_mariadb:3306/masadb"
       MURA_DBCLASS: com.mysql.cj.jdbc.Driver
       MURA_DBUSERNAME: root
       MURA_DBPASSWORD: rootpassword
-      MURA_DBHOST: masamariadb
-      MURA_DBPORT: 3306
+      MURA_DBHOST: masa_mariadb
+      MURA_DBPORT: 3307
       installModules: debugger,mysql,caching,image,mail,zip
     networks:
       - masa-test
     volumes:
       - ../../masacms:/app
     ports:
-      - "80:8500"
+      - "18080:8500"
 
 networks:
   masa-test:

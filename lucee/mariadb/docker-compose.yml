@@ -1,7 +1,7 @@
 services:
   # Masa CMS Server
   masa_mariadb_lucee:
-    image: lucee/lucee:5.3
+    image: lucee/lucee:latest
     env_file: ../.env
     environment:
       MURA_DBTYPE: mysql
@@ -17,7 +17,7 @@ services:
       - ../../masacms:/var/www
       - ../common/password.txt:/opt/lucee/server/lucee-server/context/password.txt
     ports:
-      - "80:8888"
+      - "18180:8888"
 
 networks:
   masa-test:

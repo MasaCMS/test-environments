@@ -15,6 +15,11 @@ These are test environments for Masa CMS.
 * MariaDB
 * MySQL
 
+### Boxlang
+
+* MariaDB
+* MySQL
+
 ## Requirements
 
 * GIT
@@ -30,7 +35,24 @@ These are test environments for Masa CMS.
 * Start the database: `docker compose up -d
 * Navigate to the folder of the desired cfml engine (for example: /lucee/mariadb/)
 * Start the cfml engine: `docker compose up -d
-* Open `http://localhost` in the browser
+* Open `http://localhost:{portnumber}` in the browser
+
+### Port numbers
+
+#### Adobe ColdFusion
+
+* mariadb: 18080
+* mysql: 18081
+
+#### Lucee
+
+* mariadb: 18180
+* mysql: 18181
+
+#### Boxlang
+
+* mariadb: 18280
+* mysql: 18281
 
 ## Run test suite
 
