@@ -25,8 +25,11 @@ These are test environments for Masa CMS.
 ## Start environment
 
 * Clone Masa CMS into this project: `git clone git@github.com:MasaCMS/MasaCMS.git masacms`
-* Open a terminal and navigate to the folder of the desired environment
-* Start the environment: `docker compose up -d
+* Open a terminal
+* Navigate to the folder of the desired database (for example: /mariadb/)
+* Start the database: `docker compose up -d
+* Navigate to the folder of the desired cfml engine (for example: /lucee/mariadb/)
+* Start the cfml engine: `docker compose up -d
 * Open `http://localhost` in the browser
 
 ## Run test suite

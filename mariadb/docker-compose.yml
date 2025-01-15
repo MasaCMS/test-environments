@@ -17,4 +17,5 @@ volumes:
 
 networks:
   masa-test:
+    name: masa-test
     driver: bridge
