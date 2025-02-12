@@ -3,7 +3,7 @@ services:
   masa-mariadb-acf:
     build:
       dockerfile: Dockerfile
-      target: cf23
+      target: cf21
     env_file: ../.env
     environment:
       MURA_DBTYPE: mysql
@@ -13,6 +13,7 @@ services:
       MURA_DBPASSWORD: rootpassword
       MURA_DBHOST: masa_mariadb
       MURA_DBPORT: 3307
+      MURA_PORT: 18080
       installModules: debugger,mysql,caching,image,mail,zip
     networks:
       - masa-test
