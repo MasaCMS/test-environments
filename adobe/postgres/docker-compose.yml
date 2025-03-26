@@ -1,7 +1,9 @@
 services:
   # Masa CMS Server
   masa_postgres_acf:
-    image: adobecoldfusion/coldfusion:latest-2023
+    build:
+      dockerfile: Dockerfile
+      target: cf23
     env_file: ../.env
     environment:
       MURA_DBTYPE: postgresql
