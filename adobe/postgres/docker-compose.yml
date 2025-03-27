@@ -13,6 +13,7 @@ services:
       MURA_DBPASSWORD: rootpassword
       MURA_DBHOST: masa_postgres
       MURA_DBPORT: 5432
+      MURA_PORT: 18082
       installModules: debugger,postgresql,caching,image,mail,zip
     networks:
       - masa-test

@@ -13,6 +13,7 @@ services:
       MURA_DBPASSWORD: rootpassword
       MURA_DBHOST: masa_mysql
       MURA_DBPORT: 3306
+      MURA_PORT: 18081
       installModules: debugger,mysql,caching,image,mail,zip
     networks:
       - masa-test
