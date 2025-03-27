@@ -11,6 +11,7 @@ services:
       MURA_DBPASSWORD: rootpassword
       MURA_DBHOST: masa_mysql
       MURA_DBPORT: 3306
+      MURA_PORT: 18281
       # Disabled because bx-compat-cfml doesn't load: https://community.ortussolutions.com/t/docker-miniserver-and-bx-compat-cfml-installation/10532/1
       # BOXLANG_MODULES: bx-compat-cfml,bx-esapi,bx-mysql,bx-ini,bx-unsafe-evaluate
       BOXLANG_MODULES: bbx-esapi,bx-mysql,bx-ini,bx-unsafe-evaluate
