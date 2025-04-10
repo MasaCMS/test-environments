@@ -1,0 +1,26 @@
+services:
+  # Masa CMS Server
+  masa-oracledb:
+    build:
+      dockerfile: Dockerfile
+    environment:
+          ORACLE_PWD: rootpassword
+    networks:
+        - masa-test
+    volumes:
+        - masa_oracle_data:/opt/lib/oracle/oradata
+    ports:
+        - "1521:1521"
+    healthcheck:
+      test: ["CMD", "sqlplus", "-L", "sys/rootpassword@//localhost:1521/FREE as sysdba", "@healthcheck.sql"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+    masa_oracle_data:
+
+networks:
+  masa-test:
+    name: masa-test
+    driver: bridge

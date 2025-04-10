@@ -1,0 +1,31 @@
+services:
+  # Masa CMS Server
+  masa_oracle_lucee:
+    image: lucee/lucee:latest
+    env_file: ../.env
+    environment:
+      MURA_DBTYPE: oracle
+      MURA_DBCONNECTIONSTRING: "jdbc:oracle:thin:@//masa-test:1521/masadb"
+      MURA_DBCLASS: oracle.jdbc.OracleDriver
+    # "sys/rootpassword@//localhost:1521/FREE as sysdba"
+
+# jdbc:oracle:thin:@//localhost:1521/ORCLPDB1.localdomain
+#     username: SYS as SYSDBA
+#     password: Oradoc_db1
+
+      MURA_DBUSERNAME: masadb
+      MURA_DBPASSWORD: rootpassword
+      MURA_DBHOST: masaoracledb
+      MURA_DBPORT: 1521
+    networks:
+      - masa-test
+    volumes:
+      - ../../masacms:/var/www
+      - ../common/password.txt:/opt/lucee/server/lucee-server/context/password.txt
+    ports:
+      - "18184:8888"
+
+networks:
+  masa-test:
+    name: masa-test
+    external: true
