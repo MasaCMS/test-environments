@@ -47,12 +47,14 @@ These are test environments for Masa CMS.
 * mariadb: 18080
 * mysql: 18081
 * postgres: 18082
+* mssql: 18083
 
 #### Lucee
 
 * mariadb: 18180
 * mysql: 18181
 * postgres: 18182
+* mssql: 18183
 
 #### Boxlang
 
