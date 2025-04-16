@@ -1,1 +1,0 @@
-COPY ./common/org.lucee.oracle-19.12.0.0000L.jar /opt/lucee/lib/org.lucee.oracle-19.12.0.0000L.jar
