@@ -1,0 +1,28 @@
+services:
+  # Masa CMS Server
+  masa-mssqldb-acf:
+    build:
+      dockerfile: Dockerfile
+      target: cf23
+    env_file: .env
+    environment:
+      MURA_DBTYPE: mssql
+      MURA_DBCONNECTIONSTRING: "jdbc:sqlserver://masa_mssqldb:databaseName=masadb;Port=1433;encrypt=false;"
+      MURA_DBCLASS: com.microsoft.sqlserver.jdbc.SQLServerDriver
+      MURA_DBUSERNAME: sa
+      MURA_DBPASSWORD: sup3r_passw0rd
+      MURA_DBHOST: masa_mssqldb
+      MURA_DBPORT: 1433
+      MURA_PORT: 18083
+      installModules: debugger,sqlserver,caching,image,mail,zip,graphqlclient
+    networks:
+      - masa-test
+    volumes:
+      - ../../masacms:/app
+    ports:
+      - "18083:8500"
+
+networks:
+  masa-test:
+    name: masa-test
+    external: true
