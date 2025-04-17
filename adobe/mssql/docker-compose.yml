@@ -3,8 +3,8 @@ services:
   masa-mssqldb-acf:
     build:
       dockerfile: Dockerfile
-      target: cf23
-    env_file: .env
+      target: cf25
+    env_file: ../.env
     environment:
       MURA_DBTYPE: mssql
       MURA_DBCONNECTIONSTRING: "jdbc:sqlserver://masa_mssqldb:databaseName=masadb;Port=1433;encrypt=false;"

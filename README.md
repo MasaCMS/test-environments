@@ -99,3 +99,10 @@ These are test environments for Masa CMS.
 * host: `localhost:3306`
 * user: `root`
 * password: `rootpassword`
+
+#### MSSQL
+
+* host: `localhost:1433`
+* user: `sa`
+* password: `sup3r_passw0rd`
+
