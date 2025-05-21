@@ -10,18 +10,21 @@ These are test environments for Masa CMS.
 * MariaDB
 * MySQL
 * PostgreSQL
+* MSSQL
 
 ### Lucee
 
 * MariaDB
 * MySQL
 * PostgreSQL
+* MSSQL
 
 ### Boxlang
 
 * MariaDB
 * MySQL
 * PostgreSQL
+* MSSQL
 
 ## Requirements
 
@@ -61,6 +64,7 @@ These are test environments for Masa CMS.
 * mariadb: 18280
 * mysql: 18281
 * postgres: 18282
+* mssql: 18283
 
 ## Run test suite
 
@@ -97,6 +101,12 @@ These are test environments for Masa CMS.
 #### MySQL
 
 * host: `localhost:3306`
+* user: `root`
+* password: `rootpassword`
+
+#### PostgreSQL
+
+* host: `localhost:5432`
 * user: `root`
 * password: `rootpassword`
 
