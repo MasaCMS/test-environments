@@ -12,7 +12,7 @@ services:
       MURA_DBHOST: masa_mariadb
       MURA_DBPORT: 3307
       MURA_PORT: 18280
-      BOXLANG_MODULES: bx-compat,bx-esapi,bx-mariadb,bx-ini
+      BOXLANG_MODULES: bx-compat-cfml,bx-esapi,bx-image,bx-ini,bx-lsp,bx-mail,bx-password-encrypt,bx-pdf,bx-unsafe-evaluate,bx-wddx,bx-mariadb
     networks:
       - masa-test
     volumes:
