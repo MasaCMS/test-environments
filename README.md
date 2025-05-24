@@ -116,3 +116,8 @@ These are test environments for Masa CMS.
 * user: `sa`
 * password: `sup3r_passw0rd`
 
+## Licensing
+
+This project is open-source and released under the [MIT License](LICENSE.md).
+
+For details on the licenses of third-party libraries and components used by this project, please refer to the [THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md) file.
