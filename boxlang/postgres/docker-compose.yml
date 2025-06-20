@@ -1,0 +1,26 @@
+services:
+  # Masa CMS Server
+  masa_postgres_boxlang:
+    image: ortussolutions/boxlang:miniserver
+    env_file: ../.env
+    environment:
+      MURA_DBTYPE: postgresql
+      MURA_DBCONNECTIONSTRING: "jdbc:postgresql://masa_postgres:5432/masadb"
+      MURA_DBCLASS: org.postgresql.Driver
+      MURA_DBUSERNAME: root
+      MURA_DBPASSWORD: rootpassword
+      MURA_DBHOST: masa_postgres
+      MURA_DBPORT: 5432
+      MURA_PORT: 18282
+      BOXLANG_MODULES: bx-compat-cfml,bx-esapi,bx-image,bx-ini,bx-lsp,bx-mail,bx-password-encrypt,bx-pdf,bx-unsafe-evaluate,bx-wddx,bx-postgresql
+    networks:
+      - masa-test
+    volumes:
+      - ../../masacms:/app
+    ports:
+      - "18282:8080"
+
+networks:
+  masa-test:
+    name: masa-test
+    external: true

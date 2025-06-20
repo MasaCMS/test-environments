@@ -1,0 +1,26 @@
+services:
+  # Masa CMS Server
+  masa_mariadb_boxlang:
+    image: ortussolutions/boxlang:miniserver
+    env_file: ../.env
+    environment:
+      MURA_DBTYPE: mssql
+      MURA_DBCONNECTIONSTRING: "jdbc:sqlserver://masa_mssqldb:databaseName=masadb;Port=1433;encrypt=false;"
+      MURA_DBCLASS: com.microsoft.sqlserver.jdbc.SQLServerDriver
+      MURA_DBUSERNAME: sa
+      MURA_DBPASSWORD: sup3r_passw0rd
+      MURA_DBHOST: masa_mssqldb
+      MURA_DBPORT: 1433
+      MURA_PORT: 18283
+      BOXLANG_MODULES: bx-compat-cfml,bx-esapi,bx-image,bx-ini,bx-lsp,bx-mail,bx-password-encrypt,bx-pdf,bx-unsafe-evaluate,bx-wddx,bx-mssql
+    networks:
+      - masa-test
+    volumes:
+      - ../../masacms:/app
+    ports:
+      - "18280:8080"
+
+networks:
+  masa-test:
+    name: masa-test
+    external: true

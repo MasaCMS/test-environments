@@ -1,0 +1,28 @@
+services:
+  # Masa CMS Server
+  masa-mariadb-acf:
+    build:
+      dockerfile: Dockerfile
+      target: cf23
+    env_file: ../.env
+    environment:
+      MURA_DBTYPE: mysql
+      MURA_DBCONNECTIONSTRING: "jdbc:mysql://masa_mariadb:3306/masadb"
+      MURA_DBCLASS: com.mysql.cj.jdbc.Driver
+      MURA_DBUSERNAME: root
+      MURA_DBPASSWORD: rootpassword
+      MURA_DBHOST: masa_mariadb
+      MURA_DBPORT: 3307
+      MURA_PORT: 18080
+      installModules: debugger,mysql,caching,image,mail,zip
+    networks:
+      - masa-test
+    volumes:
+      - ../../masacms:/app
+    ports:
+      - "18080:8500"
+
+networks:
+  masa-test:
+    name: masa-test
+    external: true

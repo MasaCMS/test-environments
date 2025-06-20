@@ -1,0 +1,22 @@
+services:
+  # Postgres
+  masa_postgres:
+    image: postgres:latest
+    environment:
+        POSTGRES_DB: masadb
+        POSTGRES_USER: root
+        POSTGRES_PASSWORD: rootpassword
+    networks:
+      - masa-test
+    volumes:
+        - masa_postgres_data:/var/lib/postgresql/data
+    ports:
+        - "5432:5432"
+
+volumes:
+    masa_postgres_data:
+
+networks:
+  masa-test:
+    name: masa-test
+    driver: bridge

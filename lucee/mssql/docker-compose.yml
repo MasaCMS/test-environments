@@ -1,0 +1,25 @@
+services:
+  # Masa CMS Server
+  masa_mssql_lucee:
+    image: lucee/lucee:latest
+    env_file: ../.env
+    environment:
+      MURA_DBTYPE: mssql
+      MURA_DBCONNECTIONSTRING: "jdbc:sqlserver://masa_mssqldb;databaseName=masadb;SelectMethod=direct;trustServerCertificate=true"
+      MURA_DBCLASS: com.microsoft.sqlserver.jdbc.SQLServerDriver
+      MURA_DBUSERNAME: sa
+      MURA_DBPASSWORD: sup3r_passw0rd
+      MURA_DBHOST: masa_mssqldb
+      MURA_DBPORT: 1434
+    networks:
+      - masa-test
+    volumes:
+      - ../../masacms:/var/www
+      - ../common/password.txt:/opt/lucee/server/lucee-server/context/password.txt
+    ports:
+      - "18183:8888"
+
+networks:
+  masa-test:
+    name: masa-test
+    external: true

@@ -1,0 +1,23 @@
+services:
+  # MSSQL
+  masa_mssqldb:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+        ACCEPT_EULA: Y
+        MSSQL_SA_PASSWORD: sup3r_passw0rd
+        MSSQL_PID: developer
+        MSSQL_DB: masadb
+    networks:
+      - masa-test
+    volumes:
+        - masa_mssql_data:/var/lib/mssql
+    ports:
+        - "1434:1433"
+
+volumes:
+    masa_mssql_data:
+
+networks:
+  masa-test:
+    name: masa-test
+    driver: bridge

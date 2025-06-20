@@ -1,0 +1,26 @@
+services:
+  # Masa CMS Server
+  masa_mariadb_boxlang:
+    image: ortussolutions/boxlang:miniserver-snapshot
+    env_file: ../.env
+    environment:
+      MURA_DBTYPE: mysql
+      MURA_DBCONNECTIONSTRING: "jdbc:mariadb://masa_mariadb:3306/masadb?useUnicode=true&characterEncoding=UTF-8&useLegacyDatetimeCode=true"
+      MURA_DBCLASS: com.mysql.jdbc.Driver
+      MURA_DBUSERNAME: root
+      MURA_DBPASSWORD: rootpassword
+      MURA_DBHOST: masa_mariadb
+      MURA_DBPORT: 3307
+      MURA_PORT: 18280
+      BOXLANG_MODULES: bx-compat-cfml,bx-esapi,bx-image,bx-ini,bx-lsp,bx-mail,bx-password-encrypt,bx-pdf,bx-unsafe-evaluate,bx-wddx,bx-mariadb
+    networks:
+      - masa-test
+    volumes:
+      - ../../masacms:/app
+    ports:
+      - "18280:8080"
+
+networks:
+  masa-test:
+    name: masa-test
+    external: true
