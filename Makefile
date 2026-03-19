@@ -56,7 +56,7 @@ help: ## Show this help message
 # Interactive start menu
 start:
 	@echo "$(CYAN)╔════════════════════════════════════════╗$(NC)"
-	@echo "$(CYAN)║  MasaCMS Test Environment Setup      ║$(NC)"
+	@echo "$(CYAN)║  MasaCMS Test Environment Setup        ║$(NC)"
 	@echo "$(CYAN)╔════════════════════════════════════════╗$(NC)"
 	@echo ""
 	@echo "$(GREEN)Select Database:$(NC)"

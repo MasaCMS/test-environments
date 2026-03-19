@@ -7,7 +7,7 @@ Simply run `make` to get an interactive menu:
 ```bash
 $ make
 ╔════════════════════════════════════════╗
-║  MasaCMS Test Environment Setup      ║
+║  MasaCMS Test Environment Setup        ║
 ╔════════════════════════════════════════╗
 
 Select Database:
