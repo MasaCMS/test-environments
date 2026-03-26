@@ -19,7 +19,7 @@ The easiest way to start a test environment is using the Makefile:
 
 ## Start environment
 
-### Option 1: Using Makefile And Selecting Options (Recommended)
+### Option 1: Using Makefile interactively (Recommended)
 
 Simply run `make` to get an interactive menu:
 
