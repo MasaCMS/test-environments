@@ -2,6 +2,58 @@
 
 These are test environments for Masa CMS.
 
+## Quick Start with Makefile
+
+The easiest way to start a test environment is using the Makefile:
+
+```bash
+# Interactive menu - select database and CF engine
+make
+
+# Or use direct commands
+make lucee-mysql      # Start MySQL + Lucee
+make boxlang-postgres # Start PostgreSQL + BoxLang
+make adobe-mariadb    # Start MariaDB + Adobe ColdFusion (default: CF 2023)
+
+# Adobe ColdFusion with specific version
+make adobe-mysql CF_VERSION=cf21    # ColdFusion 2021
+make adobe-mysql CF_VERSION=cf25    # ColdFusion 2025
+make adobe-mysql CF_VERSION=latest  # Latest version
+
+# Stop all containers
+make stop
+
+# Stop and remove all containers
+make down
+
+# Clean everything (including volumes)
+make clean
+
+# Show all available commands
+make help
+```
+
+### Available Make Commands
+
+**Interactive:**
+- `make` or `make start` - Interactive menu to select DB, CF engine, and Adobe version (if applicable)
+
+**Combined targets (DB + CF Engine):**
+- `make lucee-mysql`, `make lucee-mariadb`, `make lucee-postgres`, `make lucee-mssql`
+- `make boxlang-mysql`, `make boxlang-mariadb`, `make boxlang-postgres`, `make boxlang-mssql`
+- `make adobe-mysql`, `make adobe-mariadb`, `make adobe-postgres`, `make adobe-mssql`
+  - Adobe targets support `CF_VERSION` parameter: `cf21`, `cf23` (default), `cf25`, `latest`
+  - Example: `make adobe-mysql CF_VERSION=cf25`
+
+**Database-only targets:**
+- `make mysql`, `make mariadb`, `make postgres`, `make mssql`
+
+**Management:**
+- `make stop` - Stop all running containers
+- `make down` - Stop and remove all containers
+- `make clean` - Remove containers, volumes, and network
+- `make help` - Show help message
+
 ## Available environments
 
 ### Adobe ColdFusion
@@ -9,6 +61,14 @@ These are test environments for Masa CMS.
 * MariaDB
 * MySQL
 * PostgreSQL
+**Supported Versions:**
+- ColdFusion 2021 (cf21)
+- ColdFusion 2023 (cf23) - default
+- ColdFusion 2025 (cf25)
+- Latest
+
+When using the interactive menu, you'll be prompted to select the version.
+
 * MSSQL
 
 ### Lucee
@@ -53,11 +113,23 @@ These are test environments for Masa CMS.
 
 ## Start environment
 
+### Option 1: Using Makefile (Recommended)
+
+```bash
+# Interactive menu
+make
+
+# Or use a direct command
+make lucee-mysql
+```
+
+### Option 2: Manual Docker Compose
+
 * Open a terminal
 * Navigate to the folder of the desired database (for example: /mariadb/)
-* Start the database: `docker compose up -d
+* Start the database: `docker compose up -d`
 * Navigate to the folder of the desired cfml engine (for example: /lucee/mariadb/)
-* Start the cfml engine: `docker compose up -d
+* Start the cfml engine: `docker compose up -d`
 * Open `http://localhost:{portnumber}` in the browser
 
 ### Port numbers
