@@ -150,7 +150,7 @@ make down
 * Start the cfml engine: `docker compose up -d`
 * Open `http://localhost:{portnumber}` in the browser
 
-### Port Reference
+## Port Reference
 
 ##### Lucee Ports
 - MySQL: 18181
@@ -176,15 +176,22 @@ make down
 - PostgreSQL: 5432
 - MSSQL: 1433
 
-### Troubleshooting
+## Troubleshooting
 
 If you encounter issues:
 
 1. **Port conflicts**: Check if ports are already in use
+	on unix-based systems:
    ```bash
    lsof -i :3306  # Check MySQL port
    lsof -i :18181 # Check Lucee port
    ```
+
+	on windows-based systems (as Administrator):
+   ```bash
+   netstat -ab
+   ```
+   this shows a list of applications and ports used
 
 2. **Network issues**: Recreate the network
    ```bash
