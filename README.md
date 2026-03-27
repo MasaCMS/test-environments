@@ -91,15 +91,23 @@ These are test environments for Masa CMS.
 
 ## Storage Backends
 
-Masa CMS supports pluggable file storage for User_Assets via the `fileWriter.cfc` routing layer and Masa's standard event system. Three backends are available as isolated test environments.
+Masa CMS supports pluggable file storage via a `fileStorageService` bean that is injected at startup. Three backends are available as isolated test environments.
 
 ### How it works
 
-`fileWriter.cfc` detects when a file path falls inside a site's `User_Assets` directory and routes the operation through the `standardUserAssetAction` standard event. The active handler determines which storage backend is used:
+On application start, `onApplicationStart_include.cfm` registers `localStorageService` as the default `fileStorageService` singleton in the bean factory. Storage modules can override this in their `onApplicationLoad` event by calling `application.serviceFactory.addBean("fileStorageService", ...)` with their own service.
 
-- **Default (no module):** `standardEventsHandler.cfc` runs `localStorageService` — local filesystem, same as before.
-- **S3 module mounted:** `filestorage_s3` handler overrides the default, routing through `s3StorageService` → MinIO / S3.
-- **GCS module mounted:** `filestorage_gcs` handler overrides the default, routing through `gcsStorageService` → fake-gcs-server / GCS.
+All file operations route through the active `fileStorageService`:
+
+- **`fileWriter.cfc`** — detects paths inside a site's `User_Assets` directory and calls `getBean('fileStorageService')` directly for all read/write/delete/list operations.
+- **`fileDAO.cfc`** — writes and deletes cached image variants (small, medium, source) via `fileStorageService.uploadBinary()` and `deleteObject()`.
+- **`fileManager.cfc`** — serves `/_api/render/small|medium|file` requests by calling `fileStorageService.streamToResponse()` for true streaming, falling back to `resolveToLocal()` + local stream.
+
+The active backend is determined at startup:
+
+- **Default (no module):** `localStorageService` is used — local filesystem under `configBean.getFileDir()`.
+- **S3 module mounted:** `filestorage_s3.onApplicationLoad` replaces the bean with `s3StorageService` → MinIO / S3.
+- **GCS module mounted:** `filestorage_gcs.onApplicationLoad` replaces the bean with `gcsStorageService` → fake-gcs-server / GCS.
 
 Modules are **not** in the Masa core. They live in `storage/modules/` and are mounted into a Masa site via docker-compose volume mounts. When not mounted, the module doesn't exist and the local default runs automatically.
 
@@ -187,12 +195,19 @@ For production GCS, set `MURA_GCSCREDENTIALS` to the contents of a service accou
 ### Creating a new storage backend
 
 1. Create a new module in `storage/modules/filestorage_<name>/` following the same structure as `filestorage_s3` or `filestorage_gcs`.
-2. Implement `IUserAssetStorageService` interface (`core/mura/fileStorage/IUserAssetStorageService.cfc`).
-3. Add a thin handler bridge in `model/handlers/handler.cfc` that creates your service and dispatches ops, setting results on the event.
+2. Implement the storage service CFC with these public methods:
+   - `readFile(path)`, `readFileBinary(path)`, `writeFile(path, content)`, `deleteFile(path)`, `deleteDirectory(path)`
+   - `fileExists(path)`, `directoryExists(path)`, `listDirectory(path, filter, type)`, `createDirectory(path)`
+   - `copyFile(source, destination)`, `moveFile(source, destination)`, `renameFile(source, destination)`
+   - `uploadFile(destination, fileField)`, `resolveToLocal(path)`, `writeFromLocal(localPath, remotePath)`
+   - `uploadBinary(data, contentType, key)`, `deleteObject(key)` — used by `fileDAO` for cache variants
+   - `streamToResponse(path, method)` — true streaming to servlet response; returns `true` if handled, `false` if not found
+   - `getBaseUrl(siteid)` — returns the public base URL for the storage backend
+3. Add an `onApplicationLoad` handler in `model/handlers/handler.cfc` that calls `application.serviceFactory.addBean("fileStorageService", createObject(...).init())`.
 4. Register the handler in `config.xml.cfm`.
 5. Mount it via a docker-compose volume into `sites/default/modules/filestorage_<name>/`.
 
-The CFML interface enforces that your service implements all required methods with correct return types. If any method is missing or has the wrong signature, CFML throws at instantiation.
+On application load, Masa will discover the module and fire `onApplicationLoad`, which replaces the default `localStorageService` bean with your implementation. No core changes are needed.
 
 ## Configuration details
 
