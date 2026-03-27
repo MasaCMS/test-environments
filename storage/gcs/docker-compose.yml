@@ -1,0 +1,121 @@
+# GCS / fake-gcs-server storage test environment
+#
+# Runs fake-gcs-server alongside Masa CMS for local GCS testing.
+# The filestorage_gcs module is mounted into Masa's global modules directory,
+# making it available to all sites. The module's standardUserAssetActionHandler
+# overrides the default, routing User_Assets I/O through gcsStorageService -> fake-gcs-server.
+#
+# nginx sits in front of Lucee and rewrites /sites/{siteid}/(assets|cache)/...
+# to /index.cfm/... so GCS asset URLs work without index.cfm in the path.
+#
+# Usage:
+#   docker compose up
+#
+# Masa CMS: http://localhost:18183  (via nginx)
+# fake-gcs-server: http://localhost:4443
+
+services:
+
+  masa_mariadb:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: masadb
+    networks:
+      - masa-test
+    volumes:
+      - masa_mariadb_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # fake-gcs-server - GCS-compatible local emulator
+  fake_gcs:
+    image: fsouza/fake-gcs-server:latest
+    command: -scheme http -port 4443 -backend filesystem -data /data -public-host fake_gcs
+    networks:
+      - masa-test
+    ports:
+      - "4443:4443"
+    volumes:
+      - fake_gcs_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4443/storage/v1/b"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Create the test bucket in fake-gcs-server (skips if it already exists)
+  gcs_init:
+    image: curlimages/curl:latest
+    depends_on:
+      fake_gcs:
+        condition: service_healthy
+    networks:
+      - masa-test
+    entrypoint: >
+      /bin/sh -c "
+        if curl -sf http://fake_gcs:4443/storage/v1/b/masacms-assets > /dev/null 2>&1; then
+          echo 'GCS bucket masacms-assets already exists, skipping creation.';
+        else
+          curl -X POST -H 'Content-Type: application/json' -d '{\"name\":\"masacms-assets\"}' http://fake_gcs:4443/storage/v1/b;
+          echo 'GCS bucket masacms-assets created.';
+        fi
+      "
+
+  masa_storage_gcs_lucee:
+    image: lucee/lucee:latest
+    env_file: ../../lucee/.env
+    environment:
+      MURA_DBTYPE: mysql
+      MURA_DBCONNECTIONSTRING: "jdbc:mysql://masa_mariadb:3306/masadb?useUnicode=true&characterEncoding=UTF-8&useLegacyDatetimeCode=true"
+      MURA_DBCLASS: com.mysql.jdbc.Driver
+      MURA_DBUSERNAME: root
+      MURA_DBPASSWORD: rootpassword
+      MURA_DBHOST: masa_mariadb
+      MURA_DBPORT: 3307
+      MURA_PORT: 18183
+      MURA_INDEXFILEINURLS: false
+      # GCS storage configuration
+      MURA_FILESTORE: GCS
+      MURA_GCSBUCKET: masacms-assets
+      MURA_GCSENDPOINT: http://fake_gcs:4443
+      # MURA_GCSCREDENTIALS: leave empty for fake-gcs-server (no auth required)
+    depends_on:
+      fake_gcs:
+        condition: service_healthy
+      masa_mariadb:
+        condition: service_healthy
+    networks:
+      - masa-test
+    volumes:
+      - ../../../masacms:/var/www
+      - ../../lucee/common/password.txt:/opt/lucee/server/lucee-server/context/password.txt
+      # Mount the GCS module into the global modules directory so all sites pick it up.
+      - ../modules/filestorage_gcs:/var/www/modules/filestorage_gcs
+
+  # nginx reverse proxy — rewrites /sites/{siteid}/(assets|cache)/... to /index.cfm/...
+  # so GCS-backed asset URLs work without index.cfm in the path.
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "18183:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - masa_storage_gcs_lucee
+    networks:
+      - masa-test
+
+volumes:
+  masa_mariadb_data:
+  fake_gcs_data:
+
+networks:
+  masa-test:
+    name: masa-test
+    external: false

@@ -15,7 +15,7 @@ services:
     networks:
       - masa-test
     volumes:
-      - ../../masacms:/var/www
+      - ../../../masacms:/var/www
       - ../common/password.txt:/opt/lucee/server/lucee-server/context/password.txt
     ports:
       - "18180:8888"
