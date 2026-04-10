@@ -347,7 +347,7 @@ component
 		var token = getBearerToken();
 		var mediaUrl = objectMediaUrl(key);
 		var conn = createObject("java", "java.net.URL").init(mediaUrl).openConnection();
-		if (len(token)) {
+		if (len(token))å {
 			conn.setRequestProperty("Authorization", "Bearer " & token);
 		}
 		conn.setConnectTimeout(5000);
