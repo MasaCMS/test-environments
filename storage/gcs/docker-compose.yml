@@ -34,9 +34,13 @@ services:
       retries: 5
 
   # fake-gcs-server - GCS-compatible local emulator
+  # Persist objects on the named volume: use -filesystem-root (object store).
+  # The -data flag is only for *seeding* preload content, not the live bucket root;
+  # without -filesystem-root, uploads go to the default /storage inside the container
+  # and disappear when the container is recreated.
   fake_gcs:
     image: fsouza/fake-gcs-server:latest
-    command: -scheme http -port 4443 -backend filesystem -data /data -public-host fake_gcs
+    command: -scheme http -port 4443 -backend filesystem -filesystem-root /data -public-host fake_gcs
     networks:
       - masa-test
     ports:

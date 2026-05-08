@@ -262,11 +262,12 @@ component
 					var dirName = listLast(left(pfx, len(pfx) - 1), "/", true);
 					if (arguments.filter eq "*" || reFindNoCase(replace(arguments.filter, "*", ".*", "ALL"), dirName)) {
 						queryAddRow(rs);
-						querySetCell(rs, "name", dirName);
-						querySetCell(rs, "directory", prefix);
-						querySetCell(rs, "size", 0);
-						querySetCell(rs, "type", "Dir", true);
-						querySetCell(rs, "datelastmodified", now());
+						// Row index must be explicit — passing true coerces to row 1 and leaves later rows with empty type
+						querySetCell(rs, "name", dirName, rs.recordCount);
+						querySetCell(rs, "directory", prefix, rs.recordCount);
+						querySetCell(rs, "size", 0, rs.recordCount);
+						querySetCell(rs, "type", "Dir", rs.recordCount);
+						querySetCell(rs, "datelastmodified", now(), rs.recordCount);
 					}
 				}
 			}
@@ -275,11 +276,11 @@ component
 					var fileName = listLast(item.name, "/", true);
 					if (len(fileName) && (arguments.filter eq "*" || reFindNoCase(replace(arguments.filter, "*", ".*", "ALL"), fileName))) {
 						queryAddRow(rs);
-						querySetCell(rs, "name", fileName);
-						querySetCell(rs, "directory", prefix);
-						querySetCell(rs, "size", structKeyExists(item, "size") ? val(item.size) : 0);
-						querySetCell(rs, "type", "File", true);
-						querySetCell(rs, "datelastmodified", structKeyExists(item, "updated") ? parseDateTime(item.updated) : now());
+						querySetCell(rs, "name", fileName, rs.recordCount);
+						querySetCell(rs, "directory", prefix, rs.recordCount);
+						querySetCell(rs, "size", structKeyExists(item, "size") ? val(item.size) : 0, rs.recordCount);
+						querySetCell(rs, "type", "File", rs.recordCount);
+						querySetCell(rs, "datelastmodified", structKeyExists(item, "updated") ? parseDateTime(item.updated) : now(), rs.recordCount);
 					}
 				}
 			}
@@ -347,7 +348,7 @@ component
 		var token = getBearerToken();
 		var mediaUrl = objectMediaUrl(key);
 		var conn = createObject("java", "java.net.URL").init(mediaUrl).openConnection();
-		if (len(token))å {
+		if (len(token)) {
 			conn.setRequestProperty("Authorization", "Bearer " & token);
 		}
 		conn.setConnectTimeout(5000);
