@@ -48,7 +48,7 @@ component
 	private string function toKey(required string path) {
 		var s = replace(arguments.path, "\", "/", "ALL");
 		s = reReplace(s, "^/+", "");
-		s = reReplace(s, "/{2,}", "/", "ALL");
+		s = reReplace(s, "//{1,}", "/", "ALL");
 		return s;
 	}
 
@@ -163,39 +163,42 @@ component
 		return result.fileContent;
 	}
 
-	public void function writeFile(required string path, required any content) {
+	public void function writeFile(required string path, required any content, string contentType = "") {
 		var key = toKey(arguments.path);
 		var body = isBinary(arguments.content) ? arguments.content : toBinary(toBase64(arguments.content));
 		var bodyHash = sha256HexBinary(body);
 
-		var contentType = "application/octet-stream";
-		try {
-			var ext = listLast(key, ".");
-			if (len(ext) && ext neq key) {
-				var tmpName = createTempFile("prefix", "." & ext);
-				var probed = createObject("java", "java.nio.file.Files").probeContentType(
-					createObject("java", "java.io.File").init(tmpName).toPath()
-				);
-				fileDelete(tmpName);
-				if (!isNull(probed) && len(probed)) {
-					contentType = probed;
+		var resolvedContentType = len(arguments.contentType) ? arguments.contentType : "application/octet-stream";
+		if (!len(arguments.contentType)) {
+			try {
+				var ext = listLast(key, ".");
+				if (len(ext) && ext neq key) {
+					var tmpName = createTempFile("prefix", "." & ext);
+					var probed = createObject("java", "java.nio.file.Files").probeContentType(
+						createObject("java", "java.io.File").init(tmpName).toPath()
+					);
+					fileDelete(tmpName);
+					if (!isNull(probed) && len(probed)) {
+						resolvedContentType = probed;
+					}
 				}
-			}
-		} catch (any e) {}
+			} catch (any e) {}
+		}
 
-		var headers = buildAuthHeaders("PUT", key, contentType, bodyHash);
+		systemOutput("[LOG] [s3StorageService.writeFile] key=#key# url=#objectUrl(key)# bodyLen=#arrayLen(body)# contentType=#resolvedContentType#", true);
+		var headers = buildAuthHeaders("PUT", key, resolvedContentType, bodyHash);
 		var result = "";
 		cfhttp(method="PUT", url=objectUrl(key), result="result") {
 			cfhttpparam(type="header", name="Authorization", value=headers.Authorization);
 			cfhttpparam(type="header", name="x-amz-date", value=headers["x-amz-date"]);
 			cfhttpparam(type="header", name="x-amz-content-sha256", value=bodyHash);
-			cfhttpparam(type="header", name="Content-Type", value=contentType);
+			cfhttpparam(type="header", name="Content-Type", value=resolvedContentType);
 			cfhttpparam(type="body", value=body);
 		};
+		systemOutput("[LOG] [s3StorageService.writeFile] result=#result.statusCode# key=#key#", true);
 		if (left(result.statusCode, 1) neq "2") {
 			throw(message="S3 writeFile failed: #result.statusCode# for key=#key#");
 		}
-		systemOutput("[LOG] [s3StorageService.writeFile] key=#key# contentType=#contentType# status=#result.statusCode#", true);
 	}
 
 	public void function deleteFile(required string path) {
@@ -211,7 +214,7 @@ component
 
 	public void function deleteDirectory(required string path, boolean recurse = false) {
 		var prefix = toKey(arguments.path);
-		if (right(prefix, 1) neq "/") {
+		if (len(prefix) && right(prefix, 1) neq "/") {
 			prefix = prefix & "/";
 		}
 		var listing = listObjectsRaw(prefix);
@@ -229,12 +232,13 @@ component
 			cfhttpparam(type="header", name="x-amz-date", value=headers["x-amz-date"]);
 			cfhttpparam(type="header", name="x-amz-content-sha256", value=headers["x-amz-content-sha256"]);
 		};
+		systemOutput("[LOG] [s3StorageService.fileExists] key=#key# statusCode=#result.statusCode# exists=#result.statusCode eq '200 OK'#", true);
 		return result.statusCode eq "200 OK";
 	}
 
 	public boolean function directoryExists(required string path) {
 		var prefix = toKey(arguments.path);
-		if (right(prefix, 1) neq "/") {
+		if (len(prefix) && right(prefix, 1) neq "/") {
 			prefix = prefix & "/";
 		}
 		return arrayLen(listObjectsRaw(prefix)) gt 0;
@@ -262,31 +266,34 @@ component
 
 	public query function listDirectory(required string path, string filter = "*", string type = "all") {
 		var prefix = toKey(arguments.path);
-		if (right(prefix, 1) neq "/") {
+		if (len(prefix) && right(prefix, 1) neq "/") {
 			prefix = prefix & "/";
 		}
 		var listUrl = variables.endpoint & "/" & variables.bucket & "/?prefix=" & urlEncodedFormat(prefix) & "&delimiter=/";
 		var headers = buildAuthHeaders("GET", "?prefix=" & prefix, "");
 		var result = "";
 		var rs = queryNew("name,directory,size,type,datelastmodified", "varchar,varchar,integer,varchar,timestamp");
+		systemOutput("[LOG] [s3StorageService.listDirectory] path=#arguments.path# prefix=#prefix# url=#listUrl#", true);
 		cfhttp(method="GET", url=listUrl, result="result") {
 			cfhttpparam(type="header", name="Authorization", value=headers.Authorization);
 			cfhttpparam(type="header", name="x-amz-date", value=headers["x-amz-date"]);
 			cfhttpparam(type="header", name="x-amz-content-sha256", value=headers["x-amz-content-sha256"]);
 		};
+		systemOutput("[LOG] [s3StorageService.listDirectory] statusCode=#result.statusCode# response=#left("" & result.fileContent, 300)#", true);
 		if (result.statusCode eq "200 OK") {
 			var xmlDoc = xmlParse(result.fileContent);
 			if (arguments.type neq "file") {
 				var prefixes = xmlSearch(xmlDoc, "//CommonPrefixes/Prefix");
 				for (var node in prefixes) {
-					var dirName = listLast(left(node.xmlText, len(node.xmlText) - 1), "/");
+					var dirName = listLast(left(node.xmlText, len(node.xmlText) - 1), "/", true);
 					if (arguments.filter eq "*" || reFindNoCase(replace(arguments.filter, "*", ".*", "ALL"), dirName)) {
 						queryAddRow(rs);
-						querySetCell(rs, "name", dirName);
-						querySetCell(rs, "directory", prefix);
-						querySetCell(rs, "size", 0);
-						querySetCell(rs, "type", "Dir");
-						querySetCell(rs, "datelastmodified", now());
+						// Row index must be explicit — passing true coerces to row 1 and leaves later rows with empty type
+						querySetCell(rs, "name", dirName, rs.recordCount);
+						querySetCell(rs, "directory", prefix, rs.recordCount);
+						querySetCell(rs, "size", 0, rs.recordCount);
+						querySetCell(rs, "type", "Dir", rs.recordCount);
+						querySetCell(rs, "datelastmodified", now(), rs.recordCount);
 					}
 				}
 			}
@@ -297,14 +304,14 @@ component
 					var sizeNode = xmlSearch(node, "Size");
 					var modNode = xmlSearch(node, "LastModified");
 					var objKey = arrayLen(keyNode) ? keyNode[1].xmlText : "";
-					var fileName = listLast(objKey, "/");
+					var fileName = listLast(objKey, "/", true);
 					if (len(fileName) && (arguments.filter eq "*" || reFindNoCase(replace(arguments.filter, "*", ".*", "ALL"), fileName))) {
 						queryAddRow(rs);
-						querySetCell(rs, "name", fileName);
-						querySetCell(rs, "directory", prefix);
-						querySetCell(rs, "size", arrayLen(sizeNode) ? val(sizeNode[1].xmlText) : 0);
-						querySetCell(rs, "type", "File");
-						querySetCell(rs, "datelastmodified", arrayLen(modNode) ? parseDateTime(modNode[1].xmlText) : now());
+						querySetCell(rs, "name", fileName, rs.recordCount);
+						querySetCell(rs, "directory", prefix, rs.recordCount);
+						querySetCell(rs, "size", arrayLen(sizeNode) ? val(sizeNode[1].xmlText) : 0, rs.recordCount);
+						querySetCell(rs, "type", "File", rs.recordCount);
+						querySetCell(rs, "datelastmodified", arrayLen(modNode) ? parseDateTime(modNode[1].xmlText) : now(), rs.recordCount);
 					}
 				}
 			}
@@ -359,9 +366,10 @@ component
 		var localPath = tempUpload.serverDirectory & "/" & tempUpload.serverFile;
 		var destKey = reReplace(toKey(arguments.destination), "/+$", "") & "/" & tempUpload.serverFile;
 		var fileData = fileReadBinary(localPath);
+		systemOutput("[LOG] [s3StorageService.uploadFile] destination=#arguments.destination# destKey=#destKey# serverFile=#tempUpload.serverFile#", true);
 		writeFile("/" & destKey, fileData);
 		fileDelete(localPath);
-		systemOutput("[LOG] [s3StorageService.uploadFile] destKey=#destKey# file=#tempUpload.serverFile#", true);
+		systemOutput("[LOG] [s3StorageService.uploadFile] done destKey=#destKey#", true);
 		tempUpload.serverDirectory = variables.endpoint & "/" & variables.bucket & "/" & destKey;
 		return tempUpload;
 	}
@@ -377,7 +385,7 @@ component
 			cfhttpparam(type="header", name="x-amz-date", value=headers["x-amz-date"]);
 			cfhttpparam(type="header", name="x-amz-content-sha256", value=headers["x-amz-content-sha256"]);
 		};
-		systemOutput("[LOG] [s3StorageService.resolveToLocal] key=#key# status=#result.statusCode#", true);
+		systemOutput("[LOG] [s3StorageService.resolveToLocal] key=#key# status=#result.statusCode# contentLen=#isBinary(result.fileContent) ? arrayLen(result.fileContent) : len(result.fileContent)#", true);
 		if (left(result.statusCode, 1) neq "2") {
 			return "";
 		}
@@ -390,9 +398,11 @@ component
 	}
 
 	public void function writeFromLocal(required string localPath, required string remotePath) {
+		systemOutput("[LOG] [s3StorageService.writeFromLocal] localPath=#arguments.localPath# remotePath=#arguments.remotePath# key=#toKey(arguments.remotePath)#", true);
 		var fileData = fileReadBinary(arguments.localPath);
 		writeFile(arguments.remotePath, fileData);
 		fileDelete(arguments.localPath);
+		systemOutput("[LOG] [s3StorageService.writeFromLocal] done remotePath=#arguments.remotePath#", true);
 	}
 
 	public string function getBaseUrl(required string siteid) {
@@ -400,7 +410,23 @@ component
 	}
 
 	public void function uploadBinary(required any data, required string contentType, required string key) {
-		writeFile(arguments.key, arguments.data);
+		var normalizedKey = toKey(arguments.key);
+		var body = isBinary(arguments.data) ? arguments.data : toBinary(toBase64(arguments.data));
+		var bodyHash = sha256HexBinary(body);
+		var headers = buildAuthHeaders("PUT", normalizedKey, arguments.contentType, bodyHash);
+		var result = "";
+		systemOutput("[LOG] [s3StorageService.uploadBinary] key=#arguments.key# normalizedKey=#normalizedKey# contentType=#arguments.contentType# bodyLen=#arrayLen(body)#", true);
+		cfhttp(method="PUT", url=objectUrl(normalizedKey), result="result") {
+			cfhttpparam(type="header", name="Authorization", value=headers.Authorization);
+			cfhttpparam(type="header", name="x-amz-date", value=headers["x-amz-date"]);
+			cfhttpparam(type="header", name="x-amz-content-sha256", value=bodyHash);
+			cfhttpparam(type="header", name="Content-Type", value=arguments.contentType);
+			cfhttpparam(type="body", value=body);
+		};
+		systemOutput("[LOG] [s3StorageService.uploadBinary] result=#result.statusCode# key=#normalizedKey#", true);
+		if (left(result.statusCode, 1) neq "2") {
+			throw(message="S3 uploadBinary failed: #result.statusCode# for key=#normalizedKey#");
+		}
 	}
 
 	public void function deleteObject(required string key) {
