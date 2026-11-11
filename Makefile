@@ -2,7 +2,8 @@
 	mysql mariadb postgres mssql \
 	lucee-mysql lucee-mariadb lucee-postgres lucee-mssql \
 	boxlang-mysql boxlang-mariadb boxlang-postgres boxlang-mssql \
-	adobe-mysql adobe-mariadb adobe-postgres adobe-mssql adobe-clear-cfclasses
+	adobe-mysql adobe-mariadb adobe-postgres adobe-mssql adobe-clear-cfclasses \
+	e2e e2e-all e2e-report
 
 # Lucee image tag (latest, 8.0, ...), read by lucee/*/docker-compose.yml
 LUCEE_VERSION ?= latest
@@ -49,6 +50,11 @@ help: ## Show this help message
 	@echo "  make adobe-mariadb  - Start MariaDB + Adobe ColdFusion (default: cf23)"
 	@echo "  make adobe-postgres - Start PostgreSQL + Adobe ColdFusion (default: cf23)"
 	@echo "  make adobe-mssql    - Start MSSQL + Adobe ColdFusion (default: cf23)"
+	@echo ""
+	@echo "$(GREEN)E2E smoke tests (Playwright, fresh isolated environment per run):$(NC)"
+	@echo "  make e2e ENGINE=lucee DB=mysql  - Run smoke tests on one combination"
+	@echo "  make e2e-all                    - One DB per engine (FULL=1 for all 12)"
+	@echo "  make e2e-report                 - Open the last HTML report"
 	@echo ""
 	@echo "$(GREEN)Adobe ColdFusion version selection:$(NC)"
 	@echo "  CF_VERSION=cf21     - ColdFusion 2021"
@@ -280,3 +286,17 @@ clean: down
 		fi \
 	done
 	@echo "$(GREEN)✓ Cleanup complete$(NC)"
+
+# E2E smoke tests (see README). Each run uses its own compose project and is
+# torn down afterwards. Set KEEP=1 to leave the environment running.
+e2e:
+	@if [ -z "$(ENGINE)" ] || [ -z "$(DB)" ]; then \
+		echo "$(RED)Usage: make e2e ENGINE=lucee|boxlang|adobe DB=mysql|mariadb|postgres|mssql$(NC)"; exit 1; \
+	fi
+	@ENGINE=$(ENGINE) DB=$(DB) CF_VERSION=$(CF_VERSION) scripts/e2e-matrix.sh
+
+e2e-all:
+	@CF_VERSION=$(CF_VERSION) FULL=$(FULL) scripts/e2e-matrix.sh
+
+e2e-report:
+	@npx playwright show-report $(or $(REPORT),playwright-report/$(ENGINE)-$(DB))

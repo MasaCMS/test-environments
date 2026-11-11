@@ -286,3 +286,37 @@ If you encounter issues:
 * user: `sa`
 * password: `sup3r_passw0rd`
 
+
+## E2E smoke tests
+
+Playwright smoke tests live in `e2e/`. They check the public homepage, admin login, the Site Manager and creating/publishing a page.
+
+### Requirements
+
+```bash
+npm install
+npx playwright install chromium
+```
+
+### Run
+
+Each run starts a **fresh** environment in its own docker compose project (`masae2e-<engine>-<db>`), runs the tests and tears it down (including volumes). Your normal dev environment is not touched, but host ports are shared, so stop it first; the script skips a combination whose ports are in use.
+
+```bash
+make e2e ENGINE=lucee DB=mysql          # one combination
+make e2e ENGINE=adobe DB=mysql CF_VERSION=cf25
+make e2e-all                            # one DB per engine (lucee/mysql, boxlang/postgres, adobe/mssql)
+FULL=1 make e2e-all                     # every engine x database
+KEEP=1 make e2e ENGINE=lucee DB=mysql   # keep the environment running afterwards
+make e2e-report ENGINE=lucee DB=mysql   # open the HTML report
+```
+
+A summary table is printed at the end and the exit code is non-zero if any combination fails. Reports are written to `playwright-report/<engine>-<db>/` and failure traces/screenshots to `test-results/`.
+
+### Against an already running environment
+
+```bash
+BASE_URL=http://localhost:18181 npx playwright test
+```
+
+Admin credentials default to `admin`/`admin`; override with `MASA_ADMIN_USER` / `MASA_ADMIN_PASSWORD`.
