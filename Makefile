@@ -2,7 +2,7 @@
 	mysql mariadb postgres mssql \
 	lucee-mysql lucee-mariadb lucee-postgres lucee-mssql \
 	boxlang-mysql boxlang-mariadb boxlang-postgres boxlang-mssql \
-	adobe-mysql adobe-mariadb adobe-postgres adobe-mssql
+	adobe-mysql adobe-mariadb adobe-postgres adobe-mssql adobe-clear-cfclasses
 
 # Colors for output
 RED := \033[0;31m
@@ -177,22 +177,28 @@ boxlang-mssql: mssql
 # CF_VERSION can be: cf21, cf23 (default), cf25, latest
 CF_VERSION ?= cf23
 
-adobe-mysql: mysql
+# ACF compiles templates into the bind-mounted webroot (masacms/WEB-INF/cfclasses).
+# Classes from one ACF version break another (javax vs jakarta servlet API), so clear them on every start.
+adobe-clear-cfclasses:
+	@echo "$(YELLOW)Clearing Adobe ColdFusion class cache...$(NC)"
+	@rm -rf masacms/WEB-INF/cfclasses
+
+adobe-mysql: mysql adobe-clear-cfclasses
 	@echo "$(YELLOW)Starting Adobe ColdFusion $(CF_VERSION) with MySQL...$(NC)"
 	@cd adobe/mysql && sed -i.bak 's/target: .*/target: $(CF_VERSION)/' docker-compose.yml && docker compose build && docker compose up -d && mv docker-compose.yml.bak docker-compose.yml 2>/dev/null || true
 	@echo "$(GREEN)✓ Adobe ColdFusion $(CF_VERSION) is running on http://localhost:18081$(NC)"
 
-adobe-mariadb: mariadb
+adobe-mariadb: mariadb adobe-clear-cfclasses
 	@echo "$(YELLOW)Starting Adobe ColdFusion $(CF_VERSION) with MariaDB...$(NC)"
 	@cd adobe/mariadb && sed -i.bak 's/target: .*/target: $(CF_VERSION)/' docker-compose.yml && docker compose build && docker compose up -d && mv docker-compose.yml.bak docker-compose.yml 2>/dev/null || true
 	@echo "$(GREEN)✓ Adobe ColdFusion $(CF_VERSION) is running on http://localhost:18081$(NC)"
 
-adobe-postgres: postgres
+adobe-postgres: postgres adobe-clear-cfclasses
 	@echo "$(YELLOW)Starting Adobe ColdFusion $(CF_VERSION) with PostgreSQL...$(NC)"
 	@cd adobe/postgres && sed -i.bak 's/target: .*/target: $(CF_VERSION)/' docker-compose.yml && docker compose build && docker compose up -d && mv docker-compose.yml.bak docker-compose.yml 2>/dev/null || true
 	@echo "$(GREEN)✓ Adobe ColdFusion $(CF_VERSION) is running on http://localhost:18081$(NC)"
 
-adobe-mssql: mssql
+adobe-mssql: mssql adobe-clear-cfclasses
 	@echo "$(YELLOW)Starting Adobe ColdFusion $(CF_VERSION) with MSSQL...$(NC)"
 	@cd adobe/mssql && sed -i.bak 's/target: .*/target: $(CF_VERSION)/' docker-compose.yml && docker compose build && docker compose up -d && mv docker-compose.yml.bak docker-compose.yml 2>/dev/null || true
 	@echo "$(GREEN)✓ Adobe ColdFusion $(CF_VERSION) is running on http://localhost:18081$(NC)"
