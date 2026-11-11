@@ -18,7 +18,7 @@ services:
     volumes:
       - ../../masacms:/app
     ports:
-      - "18280:8080"
+      - "18283:8080"
 
 networks:
   masa-test:
