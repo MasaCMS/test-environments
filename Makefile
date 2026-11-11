@@ -129,7 +129,7 @@ postgres:
 mssql:
 	@echo "$(YELLOW)Starting MSSQL database...$(NC)"
 	@cd mssql && docker compose up -d
-	@echo "$(GREEN)✓ MSSQL is running on port 1433$(NC)"
+	@echo "$(GREEN)✓ MSSQL is running on port 1434$(NC)"
 
 # Lucee targets
 lucee-mysql: mysql
