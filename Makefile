@@ -140,17 +140,17 @@ lucee-mysql: mysql
 lucee-mariadb: mariadb
 	@echo "$(YELLOW)Starting Lucee with MariaDB...$(NC)"
 	@cd lucee/mariadb && docker compose up -d
-	@echo "$(GREEN)✓ Lucee is running on http://localhost:18181$(NC)"
+	@echo "$(GREEN)✓ Lucee is running on http://localhost:18180$(NC)"
 
 lucee-postgres: postgres
 	@echo "$(YELLOW)Starting Lucee with PostgreSQL...$(NC)"
 	@cd lucee/postgres && docker compose up -d
-	@echo "$(GREEN)✓ Lucee is running on http://localhost:18181$(NC)"
+	@echo "$(GREEN)✓ Lucee is running on http://localhost:18182$(NC)"
 
 lucee-mssql: mssql
 	@echo "$(YELLOW)Starting Lucee with MSSQL...$(NC)"
 	@cd lucee/mssql && docker compose up -d
-	@echo "$(GREEN)✓ Lucee is running on http://localhost:18181$(NC)"
+	@echo "$(GREEN)✓ Lucee is running on http://localhost:18183$(NC)"
 
 # BoxLang targets
 boxlang-mysql: mysql
@@ -161,17 +161,17 @@ boxlang-mysql: mysql
 boxlang-mariadb: mariadb
 	@echo "$(YELLOW)Starting BoxLang with MariaDB...$(NC)"
 	@cd boxlang/mariadb && docker compose up -d
-	@echo "$(GREEN)✓ BoxLang is running on http://localhost:18281$(NC)"
+	@echo "$(GREEN)✓ BoxLang is running on http://localhost:18280$(NC)"
 
 boxlang-postgres: postgres
 	@echo "$(YELLOW)Starting BoxLang with PostgreSQL...$(NC)"
 	@cd boxlang/postgres && docker compose up -d
-	@echo "$(GREEN)✓ BoxLang is running on http://localhost:18281$(NC)"
+	@echo "$(GREEN)✓ BoxLang is running on http://localhost:18282$(NC)"
 
 boxlang-mssql: mssql
 	@echo "$(YELLOW)Starting BoxLang with MSSQL...$(NC)"
 	@cd boxlang/mssql && docker compose up -d
-	@echo "$(GREEN)✓ BoxLang is running on http://localhost:18281$(NC)"
+	@echo "$(GREEN)✓ BoxLang is running on http://localhost:18283$(NC)"
 
 # Adobe ColdFusion targets
 # CF_VERSION can be: cf21, cf23 (default), cf25, latest
@@ -191,17 +191,17 @@ adobe-mysql: mysql adobe-clear-cfclasses
 adobe-mariadb: mariadb adobe-clear-cfclasses
 	@echo "$(YELLOW)Starting Adobe ColdFusion $(CF_VERSION) with MariaDB...$(NC)"
 	@cd adobe/mariadb && sed -i.bak 's/target: .*/target: $(CF_VERSION)/' docker-compose.yml && docker compose build && docker compose up -d && mv docker-compose.yml.bak docker-compose.yml 2>/dev/null || true
-	@echo "$(GREEN)✓ Adobe ColdFusion $(CF_VERSION) is running on http://localhost:18081$(NC)"
+	@echo "$(GREEN)✓ Adobe ColdFusion $(CF_VERSION) is running on http://localhost:18080$(NC)"
 
 adobe-postgres: postgres adobe-clear-cfclasses
 	@echo "$(YELLOW)Starting Adobe ColdFusion $(CF_VERSION) with PostgreSQL...$(NC)"
 	@cd adobe/postgres && sed -i.bak 's/target: .*/target: $(CF_VERSION)/' docker-compose.yml && docker compose build && docker compose up -d && mv docker-compose.yml.bak docker-compose.yml 2>/dev/null || true
-	@echo "$(GREEN)✓ Adobe ColdFusion $(CF_VERSION) is running on http://localhost:18081$(NC)"
+	@echo "$(GREEN)✓ Adobe ColdFusion $(CF_VERSION) is running on http://localhost:18082$(NC)"
 
 adobe-mssql: mssql adobe-clear-cfclasses
 	@echo "$(YELLOW)Starting Adobe ColdFusion $(CF_VERSION) with MSSQL...$(NC)"
 	@cd adobe/mssql && sed -i.bak 's/target: .*/target: $(CF_VERSION)/' docker-compose.yml && docker compose build && docker compose up -d && mv docker-compose.yml.bak docker-compose.yml 2>/dev/null || true
-	@echo "$(GREEN)✓ Adobe ColdFusion $(CF_VERSION) is running on http://localhost:18081$(NC)"
+	@echo "$(GREEN)✓ Adobe ColdFusion $(CF_VERSION) is running on http://localhost:18083$(NC)"
 
 # Stop all containers
 stop:
