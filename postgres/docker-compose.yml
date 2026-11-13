@@ -9,7 +9,7 @@ services:
     networks:
       - masa-test
     volumes:
-        - masa_postgres_data:/var/lib/postgresql/data
+        - masa_postgres_data:/var/lib/postgresql
     ports:
         - "5432:5432"
 
