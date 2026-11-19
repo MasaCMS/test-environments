@@ -6,3 +6,4 @@
 /playwright-report/
 /.playwright-mcp/
 /e2e/.auth/
+/.features-gen/

@@ -4,8 +4,9 @@
   "description": "These are test environments for Masa CMS.",
   "main": "index.js",
   "scripts": {
-    "test": "playwright test",
-    "test:e2e": "playwright test",
+    "test": "playwright test --project=smoke",
+    "test:e2e": "playwright test --project=smoke",
+    "test:features": "bddgen && playwright test --project=features",
     "test:e2e:report": "playwright show-report"
   },
   "repository": {
@@ -22,5 +23,8 @@
   "homepage": "https://github.com/MasaCMS/test-environments#readme",
   "dependencies": {
     "@playwright/test": "^1.58.2"
+  },
+  "devDependencies": {
+    "playwright-bdd": "^9.2.1"
   }
 }

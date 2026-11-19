@@ -313,6 +313,35 @@ make e2e-report ENGINE=lucee DB=mysql   # open the HTML report
 
 A summary table is printed at the end and the exit code is non-zero if any combination fails. Reports are written to `playwright-report/<engine>-<db>/` and failure traces/screenshots to `test-results/`.
 
+### Gherkin features
+
+Behavior-level tests are written as Cucumber `.feature` files in `features/`, run by [playwright-bdd](https://github.com/vitalets/playwright-bdd) on top of Playwright Test. They are a separate Playwright project (`features`) and are **not** part of the default `make e2e` run.
+
+```bash
+make e2e-features ENGINE=lucee DB=mysql          # features only
+make e2e ENGINE=lucee DB=mysql PROJECT=smoke,features   # both
+npm run test:features                            # against a running environment (BASE_URL)
+```
+
+Layout:
+
+```
+features/
+  admin/*.feature     scenarios
+  steps/*.steps.ts    step definitions (business language)
+  support/fixtures.ts shared fixtures and Given/When/Then
+  support/pages/      page objects: selectors and URLs live here, not in steps
+.features-gen/        generated specs (gitignored, rebuilt by `bddgen`)
+```
+
+Conventions:
+
+* Write steps declaratively ("I create and publish a page titled ..."), and keep selectors in page objects.
+* Scenarios start logged out. Use `Given I am logged in as an administrator` to reuse the session saved by global setup.
+* Use readable names in scenarios. The step layer adds a unique suffix to what it creates (`names.unique("About us")`) and later steps look it up with `names.resolve("About us")`, so reruns against the same environment don't collide. Nothing is cleaned up.
+* Steps that check public pages must go through `PublicSitePage`, which fails on CFML engine error output.
+* Tags `@admin` / `@anonymous` are descriptive. Tag unstable scenarios `@wip` and exclude them with `npx playwright test --project=features --grep-invert @wip`.
+
 ### Against an already running environment
 
 ```bash

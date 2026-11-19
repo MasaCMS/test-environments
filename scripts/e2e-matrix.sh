@@ -100,9 +100,13 @@ run_combo() {
   elif ! wait_for_masa "http://localhost:$port"; then
     status="FAIL"; detail="Masa did not answer within ${TIMEOUT}s"
   else
-    if ! BASE_URL="http://localhost:$port" \
-         PLAYWRIGHT_HTML_REPORT="playwright-report/$engine-$db" \
-         npx playwright test --output "test-results/$engine-$db"; then
+    # PROJECT: smoke (default), features, or both (comma separated).
+    project_args=()
+    for pr in $(echo "${PROJECT:-smoke}" | tr ',' ' '); do project_args+=(--project "$pr"); done
+    if ! { npx bddgen && \
+           BASE_URL="http://localhost:$port" \
+           PLAYWRIGHT_HTML_REPORT="playwright-report/$engine-$db" \
+           npx playwright test "${project_args[@]}" --output "test-results/$engine-$db"; }; then
       status="FAIL"; detail="see playwright-report/$engine-$db"
     fi
   fi
