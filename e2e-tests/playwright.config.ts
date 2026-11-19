@@ -20,7 +20,7 @@ export default defineConfig({
   timeout: 60_000,
   expect: { timeout: 15_000 },
   reporter: [['list'], ['html', { open: 'never' }]],
-  globalSetup: './e2e/global-setup.ts',
+  globalSetup: './lib/global-setup.ts',
   use: {
     baseURL,
     actionTimeout: 15_000,
@@ -30,7 +30,7 @@ export default defineConfig({
     ignoreHTTPSErrors: true,
   },
   projects: [
-    { name: 'smoke', testDir: './e2e', use: { ...devices['Desktop Chrome'] } },
+    { name: 'smoke', testDir: './smoke', use: { ...devices['Desktop Chrome'] } },
     { name: 'features', testDir: featuresTestDir, use: { ...devices['Desktop Chrome'] } },
   ],
 });

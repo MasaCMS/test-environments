@@ -1,5 +1,5 @@
 import { expect, Page } from '@playwright/test';
-import { ADMIN_PASSWORD, ADMIN_USER } from '../../../e2e/helpers';
+import { ADMIN_PASSWORD, ADMIN_USER } from '../../../lib/helpers';
 
 export class LoginPage {
   constructor(private readonly page: Page) {}

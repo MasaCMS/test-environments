@@ -289,11 +289,12 @@ If you encounter issues:
 
 ## E2E smoke tests
 
-Playwright smoke tests live in `e2e/`. They check the public homepage, admin login, the Site Manager and creating/publishing a page.
+Everything related to the E2E tests lives in [`e2e-tests/`](e2e-tests/) (its own `package.json`, config, tests and runner script). The Playwright smoke tests are in `e2e-tests/smoke/`. They check the public homepage, admin login, the Site Manager and creating/publishing a page.
 
 ### Requirements
 
 ```bash
+cd e2e-tests
 npm install
 npx playwright install chromium
 ```
@@ -311,27 +312,32 @@ KEEP=1 make e2e ENGINE=lucee DB=mysql   # keep the environment running afterward
 make e2e-report ENGINE=lucee DB=mysql   # open the HTML report
 ```
 
-A summary table is printed at the end and the exit code is non-zero if any combination fails. Reports are written to `playwright-report/<engine>-<db>/` and failure traces/screenshots to `test-results/`.
+A summary table is printed at the end and the exit code is non-zero if any combination fails. Reports are written to `e2e-tests/playwright-report/<engine>-<db>/` and failure traces/screenshots to `e2e-tests/test-results/`.
 
 ### Gherkin features
 
-Behavior-level tests are written as Cucumber `.feature` files in `features/`, run by [playwright-bdd](https://github.com/vitalets/playwright-bdd) on top of Playwright Test. They are a separate Playwright project (`features`) and are **not** part of the default `make e2e` run.
+Behavior-level tests are written as Cucumber `.feature` files in `e2e-tests/features/`, run by [playwright-bdd](https://github.com/vitalets/playwright-bdd) on top of Playwright Test. They are a separate Playwright project (`features`) and are **not** part of the default `make e2e` run.
 
 ```bash
 make e2e-features ENGINE=lucee DB=mysql          # features only
 make e2e ENGINE=lucee DB=mysql PROJECT=smoke,features   # both
-npm run test:features                            # against a running environment (BASE_URL)
+(cd e2e-tests && npm run test:features)          # against a running environment (BASE_URL)
 ```
 
 Layout:
 
 ```
-features/
-  admin/*.feature     scenarios
-  steps/*.steps.ts    step definitions (business language)
-  support/fixtures.ts shared fixtures and Given/When/Then
-  support/pages/      page objects: selectors and URLs live here, not in steps
-.features-gen/        generated specs (gitignored, rebuilt by `bddgen`)
+e2e-tests/
+  package.json, playwright.config.ts
+  scripts/e2e-matrix.sh  starts each engine/DB, runs the tests, tears down
+  smoke/                 smoke specs
+  lib/                   shared helpers and global setup (admin login)
+  features/
+    admin/*.feature      scenarios
+    steps/*.steps.ts     step definitions (business language)
+    support/fixtures.ts  shared fixtures and Given/When/Then
+    support/pages/       page objects: selectors and URLs live here, not in steps
+  .features-gen/         generated specs (gitignored, rebuilt by `bddgen`)
 ```
 
 Conventions:
@@ -340,12 +346,34 @@ Conventions:
 * Scenarios start logged out. Use `Given I am logged in as an administrator` to reuse the session saved by global setup.
 * Use readable names in scenarios. The step layer adds a unique suffix to what it creates (`names.unique("About us")`) and later steps look it up with `names.resolve("About us")`, so reruns against the same environment don't collide. Nothing is cleaned up.
 * Steps that check public pages must go through `PublicSitePage`, which fails on CFML engine error output.
-* Tags `@admin` / `@anonymous` are descriptive. Tag unstable scenarios `@wip` and exclude them with `npx playwright test --project=features --grep-invert @wip`.
+* Tags `@admin` / `@anonymous` are descriptive. Tag unstable scenarios `@wip` and exclude them with `(cd e2e-tests && npx playwright test --project=features --grep-invert @wip)`.
+
+### File storage tests
+
+`e2e-tests/features/file-storage/` automates the browser and HTTP parts of the File Storage Service manual test plan (branch `feature/file-storage-service-improvements` of Masa CMS). They are tagged `@file-storage`:
+
+```bash
+cd e2e-tests && npx playwright test --project=features --grep @file-storage
+```
+
+They read the file cache (`sites/default/cache/file/`) straight from the bind-mounted Masa tree, so they only work against a local environment. Set `MASA_DIR` if your Masa checkout is not at `../masacms`. Test content is not cleaned up, except that the delete scenario empties the **site trash**; use a throwaway environment.
+
+| Manual plan section | Automated |
+|---|---|
+| 1 Startup | app reload serves the front end without errors (cold start is not covered) |
+| 2 Upload, cache, render | JPG/PNG/GIF primary images (cache variants, byte-identical `_source`, shown on the page), PDF File item, render API inline/attachment/`size=source` |
+| 4 Delete, restore, purge | delete, still served, restore, delete again, empty trash, every cache file gone |
+| 8 Asset route | cache file streamed inline/attachment, missing file 404, five path-traversal variants |
+
+Not automated (manual, or needs test-only code in the Masa tree): custom image sizes and cache maintenance functions (section 2 and 5 need a temporary template), image editor crop/rotate (3), the shared-file and version-restore cases (4), the admin file browser (6), CKEditor (7), the `pooltest` second site, plugin/bundle paths (9), and the S3 removal (10). The temp directory and error log checks are not covered either.
+
+Note: the render API without a size returns a re-encoded `_file` variant, not the original bytes. The tests compare checksums on `size=source` and on the asset route instead.
 
 ### Against an already running environment
 
 ```bash
-BASE_URL=http://localhost:18181 npx playwright test
+cd e2e-tests
+BASE_URL=http://localhost:18181 npx playwright test --project=smoke
 ```
 
 Admin credentials default to `admin`/`admin`; override with `MASA_ADMIN_USER` / `MASA_ADMIN_PASSWORD`.

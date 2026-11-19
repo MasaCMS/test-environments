@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { AUTH_FILE, expectNoEngineError } from '../../e2e/helpers';
+import { AUTH_FILE, expectNoEngineError } from '../../lib/helpers';
 import { Given, Then, When } from '../support/fixtures';
 
 // Reuses the admin session that global-setup saved, so no UI login per scenario.

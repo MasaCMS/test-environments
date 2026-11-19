@@ -3,10 +3,10 @@
 # Run the Playwright smoke tests against fresh engine/DB combinations.
 #
 # Usage:
-#   scripts/e2e-matrix.sh                       # reduced set (one DB per engine)
-#   FULL=1 scripts/e2e-matrix.sh                # all engines x all databases
-#   ENGINE=lucee DB=mysql scripts/e2e-matrix.sh # a single combination
-#   ENGINE=adobe DB=mysql CF_VERSION=cf25 scripts/e2e-matrix.sh
+#   e2e-tests/e2e-tests/scripts/e2e-matrix.sh             # reduced set (one DB per engine)
+#   FULL=1 e2e-tests/scripts/e2e-matrix.sh                # all engines x all databases
+#   ENGINE=lucee DB=mysql e2e-tests/scripts/e2e-matrix.sh # a single combination
+#   ENGINE=adobe DB=mysql CF_VERSION=cf25 e2e-tests/scripts/e2e-matrix.sh
 #
 # Each combination runs in its own docker compose project (masae2e-<engine>-<db>),
 # so teardown (down -v) only removes the containers and volumes of that run and
@@ -21,7 +21,14 @@
 #   KEEP=1          do not tear down after the run (for debugging)
 
 set -u
-cd "$(dirname "$0")/.."
+ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+E2E_DIR="$ROOT_DIR/e2e-tests"
+cd "$ROOT_DIR"   # make and docker compose run from the repo root
+
+if [ ! -d "$E2E_DIR/node_modules" ]; then
+  echo "Dependencies missing. Run: (cd e2e-tests && npm install && npx playwright install chromium)" >&2
+  exit 2
+fi
 
 ENGINES_ALL="lucee boxlang adobe"
 DBS_ALL="mysql mariadb postgres mssql"
@@ -103,16 +110,16 @@ run_combo() {
     # PROJECT: smoke (default), features, or both (comma separated).
     project_args=()
     for pr in $(echo "${PROJECT:-smoke}" | tr ',' ' '); do project_args+=(--project "$pr"); done
-    if ! { npx bddgen && \
+    if ! ( cd "$E2E_DIR" && npx bddgen && \
            BASE_URL="http://localhost:$port" \
            PLAYWRIGHT_HTML_REPORT="playwright-report/$engine-$db" \
-           npx playwright test "${project_args[@]}" --output "test-results/$engine-$db"; }; then
-      status="FAIL"; detail="see playwright-report/$engine-$db"
+           npx playwright test "${project_args[@]}" --output "test-results/$engine-$db" ); then
+      status="FAIL"; detail="see e2e-tests/playwright-report/$engine-$db"
     fi
   fi
 
   if [ "$status" = "FAIL" ]; then
-    ( cd "$engine/$db" && docker compose logs --tail 40 2>/dev/null ) > "test-results/$engine-$db.log" 2>&1 || true
+    ( cd "$engine/$db" && docker compose logs --tail 40 2>/dev/null ) > "$E2E_DIR/test-results/$engine-$db.log" 2>&1 || true
     failures=$((failures + 1))
   fi
   [ "${KEEP:-0}" = "1" ] || teardown "$engine" "$db"
@@ -120,7 +127,7 @@ run_combo() {
   results+=("$engine|$db|$status|$detail ($((SECONDS - start))s)")
 }
 
-mkdir -p test-results
+mkdir -p "$E2E_DIR/test-results"
 for engine in $engines; do
   list="$dbs"; [ -n "$list" ] || list="$(pick_dbs "$engine")"
   for db in $list; do

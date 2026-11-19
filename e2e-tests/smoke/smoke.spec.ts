@@ -6,7 +6,7 @@ import {
   expectNoEngineError,
   newPageUrl,
   siteManagerUrl,
-} from './helpers';
+} from '../lib/helpers';
 
 test.describe('public site', () => {
   test('homepage renders without engine errors', async ({ page }) => {

@@ -5,7 +5,7 @@ export const ADMIN_PASSWORD = process.env.MASA_ADMIN_PASSWORD || 'admin';
 export const SITE_ID = 'default';
 export const SITE_MANAGER_MODULE = '00000000000000000000000000000000000';
 export const HOME_CONTENT_ID = '00000000000000000000000000000000001';
-export const AUTH_FILE = 'e2e/.auth/admin.json';
+export const AUTH_FILE = '.auth/admin.json';
 
 // Text that shows up when the CFML engine renders an error page.
 export const ENGINE_ERROR_PATTERNS = [
@@ -40,9 +40,9 @@ export function siteManagerUrl() {
   return `/admin/?muraAction=cArch.list&siteid=${SITE_ID}&moduleid=${SITE_MANAGER_MODULE}`;
 }
 
-export function newPageUrl() {
+export function newPageUrl(type: 'Page' | 'File' = 'Page') {
   return (
-    `/admin/?muraAction=cArch.edit&type=Page&subtype=Default&siteid=${SITE_ID}` +
+    `/admin/?muraAction=cArch.edit&type=${type}&subtype=Default&siteid=${SITE_ID}` +
     `&moduleid=${SITE_MANAGER_MODULE}&parentid=${HOME_CONTENT_ID}&contentid=&startrow=1`
   );
 }
