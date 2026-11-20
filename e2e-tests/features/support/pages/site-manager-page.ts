@@ -8,6 +8,22 @@ export class SiteManagerPage {
     await this.page.goto(siteManagerUrl());
   }
 
+  /** The search box in the admin header searches the content of the site. */
+  async search(keywords: string) {
+    await this.open();
+    await this.page.locator('#mura-search-keywords, input[name=keywords]').first().fill(keywords);
+    await this.page.locator('#mura-search-keywords, input[name=keywords]').first().press('Enter');
+    await this.page.waitForLoadState('networkidle');
+  }
+
+  async expectSearchResult(title: string) {
+    await expect(this.page.locator('a[href*="cArch.edit"]', { hasText: title }).first()).toBeVisible();
+  }
+
+  async expectNoSearchResult(title: string) {
+    await expect(this.page.locator('a[href*="cArch.edit"]', { hasText: title })).toHaveCount(0);
+  }
+
   async expectVisible() {
     await expect(this.page).toHaveTitle(/Site Content/);
     await expect(this.page.getByText('Add User')).toBeAttached();
