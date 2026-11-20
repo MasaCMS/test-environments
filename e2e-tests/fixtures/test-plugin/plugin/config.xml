@@ -1,0 +1,28 @@
+<plugin>
+	<name>E2E Test Plugin</name>
+	<package>E2ETestPlugin</package>
+	<directoryFormat>packageOnly</directoryFormat>
+	<loadPriority>5</loadPriority>
+	<version>1.0</version>
+	<provider>E2E tests</provider>
+	<providerURL>https://github.com/MasaCMS/test-environments</providerURL>
+	<category>Application</category>
+	<settings>
+		<setting>
+			<name>greeting</name>
+			<label>Greeting</label>
+			<hint>The text the display object shows.</hint>
+			<type>text</type>
+			<required>false</required>
+			<validation></validation>
+			<regex></regex>
+			<message></message>
+			<defaultvalue>Hello from the E2E plugin</defaultvalue>
+			<optionlist></optionlist>
+			<optionlabellist></optionlabellist>
+		</setting>
+	</settings>
+	<displayobjects location="global">
+		<displayobject name="E2E Greeting" displayobjectfile="display_objects/greeting.cfm" />
+	</displayobjects>
+</plugin>

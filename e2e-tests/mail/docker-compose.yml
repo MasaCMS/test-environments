@@ -1,0 +1,11 @@
+# A mail server that keeps what it receives, for the email tests (see lib/mail-catcher.ts).
+#   docker compose -f e2e-tests/mail/docker-compose.yml up -d     start
+#   docker compose -f e2e-tests/mail/docker-compose.yml down      stop
+# SMTP on 1025, web interface and API on http://localhost:8025
+services:
+  mailpit:
+    image: axllent/mailpit
+    container_name: e2e-mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"

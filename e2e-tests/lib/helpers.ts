@@ -9,7 +9,8 @@ export const AUTH_FILE = '.auth/admin.json';
 
 // Text that shows up when the CFML engine renders an error page.
 export const ENGINE_ERROR_PATTERNS = [
-  /Error Occurred/i,
+  // The calendar display's script holds the text "error occurred while fetching events".
+  /Error Occurred(?! while fetching events)/i,
   /Application\.cfc/i,
   /cfcatch|cfthrow/i,
   /coldfusion\.runtime/i,
@@ -40,9 +41,9 @@ export function siteManagerUrl() {
   return `/admin/?muraAction=cArch.list&siteid=${SITE_ID}&moduleid=${SITE_MANAGER_MODULE}`;
 }
 
-export function newPageUrl(type: 'Page' | 'File' = 'Page') {
+export function newPageUrl(type: string = 'Page', parentId: string = HOME_CONTENT_ID) {
   return (
     `/admin/?muraAction=cArch.edit&type=${type}&subtype=Default&siteid=${SITE_ID}` +
-    `&moduleid=${SITE_MANAGER_MODULE}&parentid=${HOME_CONTENT_ID}&contentid=&startrow=1`
+    `&moduleid=${SITE_MANAGER_MODULE}&parentid=${parentId}&contentid=&startrow=1`
   );
 }

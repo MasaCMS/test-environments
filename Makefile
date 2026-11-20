@@ -294,14 +294,14 @@ e2e:
 	@if [ -z "$(ENGINE)" ] || [ -z "$(DB)" ]; then \
 		echo "$(RED)Usage: make e2e ENGINE=lucee|boxlang|adobe DB=mysql|mariadb|postgres|mssql$(NC)"; exit 1; \
 	fi
-	@ENGINE=$(ENGINE) DB=$(DB) CF_VERSION=$(CF_VERSION) PROJECT=$(PROJECT) e2e-tests/scripts/e2e-matrix.sh
+	@ENGINE=$(ENGINE) DB=$(DB) CF_VERSION=$(CF_VERSION) PROJECT=$(PROJECT) EVIDENCE=$(EVIDENCE) e2e-tests/scripts/e2e-matrix.sh
 
 e2e-all:
-	@CF_VERSION=$(CF_VERSION) FULL=$(FULL) PROJECT=$(PROJECT) e2e-tests/scripts/e2e-matrix.sh
+	@CF_VERSION=$(CF_VERSION) FULL=$(FULL) PROJECT=$(PROJECT) EVIDENCE=$(EVIDENCE) e2e-tests/scripts/e2e-matrix.sh
 
 # Gherkin features only (PROJECT=smoke,features runs both).
 e2e-features:
 	@$(MAKE) e2e PROJECT=features ENGINE=$(ENGINE) DB=$(DB) CF_VERSION=$(CF_VERSION)
 
 e2e-report:
-	@cd e2e-tests && npx playwright show-report $(or $(REPORT),playwright-report/$(ENGINE)-$(DB))
+	@cd e2e-tests && npx playwright show-report $(or $(REPORT),reports/$(ENGINE)-$(DB)/html)

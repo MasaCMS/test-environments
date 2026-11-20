@@ -112,14 +112,15 @@ run_combo() {
     for pr in $(echo "${PROJECT:-smoke}" | tr ',' ' '); do project_args+=(--project "$pr"); done
     if ! ( cd "$E2E_DIR" && npx bddgen && \
            BASE_URL="http://localhost:$port" \
-           PLAYWRIGHT_HTML_REPORT="playwright-report/$engine-$db" \
-           npx playwright test "${project_args[@]}" --output "test-results/$engine-$db" ); then
-      status="FAIL"; detail="see e2e-tests/playwright-report/$engine-$db"
+           PLAYWRIGHT_HTML_REPORT="reports/$engine-$db/html" \
+           npx playwright test "${project_args[@]}" --output "reports/$engine-$db/evidence" ); then
+      status="FAIL"; detail="see e2e-tests/reports/$engine-$db"
     fi
   fi
 
   if [ "$status" = "FAIL" ]; then
-    ( cd "$engine/$db" && docker compose logs --tail 40 2>/dev/null ) > "$E2E_DIR/test-results/$engine-$db.log" 2>&1 || true
+    mkdir -p "$E2E_DIR/reports/$engine-$db"
+    ( cd "$engine/$db" && docker compose logs --tail 40 2>/dev/null ) > "$E2E_DIR/reports/$engine-$db/server.log" 2>&1 || true
     failures=$((failures + 1))
   fi
   [ "${KEEP:-0}" = "1" ] || teardown "$engine" "$db"
@@ -127,7 +128,7 @@ run_combo() {
   results+=("$engine|$db|$status|$detail ($((SECONDS - start))s)")
 }
 
-mkdir -p "$E2E_DIR/test-results"
+mkdir -p "$E2E_DIR/reports"
 for engine in $engines; do
   list="$dbs"; [ -n "$list" ] || list="$(pick_dbs "$engine")"
   for db in $list; do
