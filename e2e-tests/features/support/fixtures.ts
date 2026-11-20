@@ -19,6 +19,7 @@ import { CachingPage } from './pages/caching-page';
 import { LoginAttempts } from './pages/login-attempts';
 import { TimingPage } from './pages/timing-page';
 import { ResourceBundlesPage } from './pages/resource-bundles-page';
+import { ScreenSession } from './pages/screens';
 import { PluginsPage } from './pages/plugins-page';
 import { PublicFormPage } from './pages/public-form-page';
 import { LayoutManagerPage } from './pages/layout-manager-page';
@@ -95,6 +96,15 @@ export class Forms {
   }
 }
 
+export class ScreenSessions {
+  readonly sessions: ScreenSession[] = [];
+  last(): ScreenSession {
+    const session = this.sessions.at(-1);
+    if (!session) throw new Error('No screen session was opened in this scenario');
+    return session;
+  }
+}
+
 export const test = base.extend<{
   changesets: ChangesetsPage;
   bundles: BundlesPage;
@@ -105,6 +115,9 @@ export const test = base.extend<{
   visitorPage: Page;
   timing: TimingPage;
   resourceBundles: ResourceBundlesPage;
+  screenSessions: ScreenSessions;
+  screenVisitor: (screen: string) => Promise<Page>;
+  screenAdmin: (screen: string) => Promise<ScreenSession>;
   fileBrowser: FileBrowserPage;
   categories: CategoriesPage;
   emailSettings: EmailSettingsPage;
@@ -161,6 +174,29 @@ export const test = base.extend<{
     await context.close();
   },
   timing: async ({ page, request }, use) => use(new TimingPage(page, request)),
+  screenSessions: async ({}, use) => use(new ScreenSessions()),
+  // A public visitor with the screen size of a phone or tablet.
+  screenVisitor: async ({ browser, baseURL, screenSessions }, use) => {
+    const closers: (() => Promise<void>)[] = [];
+    await use(async (screen) => {
+      const { session, close } = await ScreenSession.open(browser, baseURL, screen);
+      screenSessions.sessions.push(session);
+      closers.push(close);
+      return session.page;
+    });
+    for (const close of closers) await close();
+  },
+  // The administrator, logged in, with the screen size of a phone or tablet.
+  screenAdmin: async ({ browser, baseURL, screenSessions }, use) => {
+    const closers: (() => Promise<void>)[] = [];
+    await use(async (screen) => {
+      const { session, close } = await ScreenSession.open(browser, baseURL, screen, true);
+      screenSessions.sessions.push(session);
+      closers.push(close);
+      return session;
+    });
+    for (const close of closers) await close();
+  },
   fileBrowser: async ({ page }, use) => use(new FileBrowserPage(page)),
   categories: async ({ page }, use) => use(new CategoriesPage(page)),
   // The mail server of the site is a setting of the whole site; a scenario that changed it puts it back.
