@@ -1,7 +1,7 @@
 services:
   # Masa CMS Server
   masa_postgres_cfml:
-    image: lucee/lucee:latest
+    image: lucee/lucee:${LUCEE_VERSION:-latest}
     env_file: ../.env
     environment:
       MURA_DBTYPE: postgresql
