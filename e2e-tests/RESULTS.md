@@ -53,14 +53,6 @@ Based on section 9 of the manual test plan. 9 scenarios in `features/categories-
 ### 1.2j Email tests (new)
 Based on section 10 of the manual test plan. 8 scenarios in `features/email/` with Mailpit (`e2e-tests/mail/docker-compose.yml`; the scenarios are skipped when it is not running): mail server settings saved; the connection test passes and fails; a form response is emailed to one or several addresses from the site's default From address with the form title as subject; no email for a form without an address or a refused response. Not automated: mailing lists (legacy), the admin password reset email (F-33), registration and approval emails, SMTP authentication and TLS.
 
-### 1.3 Environment fixes found while running the tests
-These are on separate branches and are not part of the E2E branch.
-
-| Branch | Fix |
-|---|---|
-| `fix/compose-ports` (PR #4) | Corrected host ports in `boxlang/mssql` (18283) and `lucee/mssql` (`MURA_PORT: 18183`); corrected "is running on" messages in the Makefile. |
-| `fix/environment-config` (commit 73bea42, not pushed) | `MURA_DEFAULTHASHALGORITHM=SHA-256` for adobe/boxlang/lucee; removed `bx-lsp` from `BOXLANG_MODULES`; PostgreSQL volume path `/var/lib/postgresql`. |
-
 ### 1.4 Not automated from the file storage plan
 Custom sizes and cache maintenance calls (need a temporary template), image editor crop and rotate, shared-file and version restore, admin file browser, CKEditor, `pooltest` site, plugin and bundle paths, S3 removal, temp directory and error-log checks.
 
