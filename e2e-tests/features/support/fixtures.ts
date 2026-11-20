@@ -18,6 +18,7 @@ import { RestApiPage } from './pages/rest-api-page';
 import { CachingPage } from './pages/caching-page';
 import { LoginAttempts } from './pages/login-attempts';
 import { TimingPage } from './pages/timing-page';
+import { ResourceBundlesPage } from './pages/resource-bundles-page';
 import { PluginsPage } from './pages/plugins-page';
 import { PublicFormPage } from './pages/public-form-page';
 import { LayoutManagerPage } from './pages/layout-manager-page';
@@ -103,6 +104,7 @@ export const test = base.extend<{
   loginAttempts: LoginAttempts;
   visitorPage: Page;
   timing: TimingPage;
+  resourceBundles: ResourceBundlesPage;
   fileBrowser: FileBrowserPage;
   categories: CategoriesPage;
   emailSettings: EmailSettingsPage;
@@ -146,6 +148,12 @@ export const test = base.extend<{
     if (caching.touched) await caching.setCaching(false).catch(() => {});
   },
   loginAttempts: async ({}, use) => use(new LoginAttempts()),
+  // The site locale is a setting of the whole site; a scenario that changed it puts the default back.
+  resourceBundles: async ({ page }, use) => {
+    const resourceBundles = new ResourceBundlesPage(page);
+    await use(resourceBundles);
+    if (resourceBundles.touched) await resourceBundles.setSiteLocale('').catch(() => {});
+  },
   // The raw page of a public visitor, for checks that run script in the page.
   visitorPage: async ({ browser, baseURL }, use) => {
     const context = await browser.newContext({ baseURL });
