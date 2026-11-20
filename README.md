@@ -57,6 +57,20 @@ Starting mysql database and Adobe ColdFusion cf25...
 ✓ Adobe ColdFusion cf25 is running on http://localhost:18081
 ```
 
+When you select Lucee you are prompted for a version as well:
+
+```
+Select Lucee Version:
+  1) Lucee 6.2
+  2) Lucee 7.1
+  3) Lucee 8.0
+  4) Latest
+
+Enter version choice (1-4): 3
+
+Starting mysql database and Lucee 8.0...
+```
+
 **Note:** When selecting Adobe ColdFusion or Lucee, you'll be prompted to choose a version.
 This does not apply to the BoxLang engine.
 
@@ -73,8 +87,11 @@ make lucee-mariadb
 make lucee-postgres
 make lucee-mssql
 
-# Pick a Lucee version: 6.2, 7.1, 8.0 or latest (default)
-make lucee-mysql LUCEE_VERSION=8.0
+# Lucee with specific version
+make lucee-mysql LUCEE_VERSION=6.2      # Lucee 6.2
+make lucee-mysql LUCEE_VERSION=7.1      # Lucee 7.1
+make lucee-mysql LUCEE_VERSION=8.0      # Lucee 8.0
+make lucee-mysql LUCEE_VERSION=latest   # Latest version (default)
 
 # BoxLang combinations
 make boxlang-mysql
@@ -124,6 +141,10 @@ make clean
 make lucee-mysql
 # Visit http://localhost:18181
 
+# Start MariaDB and Lucee 8.0
+make lucee-mariadb LUCEE_VERSION=8.0
+# Visit http://localhost:18180
+
 # Start MariaDB and Adobe ColdFusion 2025
 make adobe-mariadb CF_VERSION=cf25
 # Visit http://localhost:18080
@@ -156,6 +177,8 @@ make down
 ## Port Reference
 
 ##### Lucee Ports
+The ports are the same for every Lucee version (`LUCEE_VERSION`).
+
 - MySQL: 18181
 - MariaDB: 18180
 - PostgreSQL: 18182
