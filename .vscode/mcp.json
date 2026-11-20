@@ -1,0 +1,20 @@
+{
+  "inputs": [],
+  "servers": {
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ],
+      "type": "stdio"
+    },
+    "aisquare-playwright": {
+      "command": "npx",
+      "args": [
+        "aisquare-playwright-mcp@latest"
+      ],
+      "type": "stdio"
+    }
+  }
+}
