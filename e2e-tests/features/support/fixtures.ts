@@ -10,6 +10,7 @@ import { FileBrowserPage } from './pages/file-browser-page';
 import { CategoriesPage } from './pages/categories-page';
 import { EmailSettingsPage } from './pages/email-settings-page';
 import { MailCatcher } from '../../lib/mail-catcher';
+import { ChangesetsPage } from './pages/changesets-page';
 import { PluginsPage } from './pages/plugins-page';
 import { PublicFormPage } from './pages/public-form-page';
 import { LayoutManagerPage } from './pages/layout-manager-page';
@@ -87,6 +88,7 @@ export class Forms {
 }
 
 export const test = base.extend<{
+  changesets: ChangesetsPage;
   fileBrowser: FileBrowserPage;
   categories: CategoriesPage;
   emailSettings: EmailSettingsPage;
@@ -114,6 +116,7 @@ export const test = base.extend<{
   uploads: UploadedFiles;
 }>({
   names: async ({}, use) => use(new ScenarioNames()),
+  changesets: async ({ page }, use) => use(new ChangesetsPage(page)),
   fileBrowser: async ({ page }, use) => use(new FileBrowserPage(page)),
   categories: async ({ page }, use) => use(new CategoriesPage(page)),
   // The mail server of the site is a setting of the whole site; a scenario that changed it puts it back.
