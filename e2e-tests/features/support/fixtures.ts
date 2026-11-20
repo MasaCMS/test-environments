@@ -17,6 +17,7 @@ import { SiteSearchPage } from './pages/site-search-page';
 import { RestApiPage } from './pages/rest-api-page';
 import { CachingPage } from './pages/caching-page';
 import { LoginAttempts } from './pages/login-attempts';
+import { TimingPage } from './pages/timing-page';
 import { PluginsPage } from './pages/plugins-page';
 import { PublicFormPage } from './pages/public-form-page';
 import { LayoutManagerPage } from './pages/layout-manager-page';
@@ -101,6 +102,7 @@ export const test = base.extend<{
   caching: CachingPage;
   loginAttempts: LoginAttempts;
   visitorPage: Page;
+  timing: TimingPage;
   fileBrowser: FileBrowserPage;
   categories: CategoriesPage;
   emailSettings: EmailSettingsPage;
@@ -150,6 +152,7 @@ export const test = base.extend<{
     await use(await context.newPage());
     await context.close();
   },
+  timing: async ({ page, request }, use) => use(new TimingPage(page, request)),
   fileBrowser: async ({ page }, use) => use(new FileBrowserPage(page)),
   categories: async ({ page }, use) => use(new CategoriesPage(page)),
   // The mail server of the site is a setting of the whole site; a scenario that changed it puts it back.
