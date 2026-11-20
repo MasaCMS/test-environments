@@ -1,7 +1,7 @@
 services:
   # Masa CMS Server
   masa_mysql_lucee:
-    image: lucee/lucee:latest
+    image: lucee/lucee:${LUCEE_VERSION:-latest}
     env_file: ../.env
     environment:
       MURA_DBTYPE: mysql

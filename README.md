@@ -57,8 +57,8 @@ Starting mysql database and Adobe ColdFusion cf25...
 ✓ Adobe ColdFusion cf25 is running on http://localhost:18081
 ```
 
-**Note:** When selecting Adobe ColdFusion, you'll be prompted to choose a version.
-This does not apply to Lucee or BoxLang engines.
+**Note:** When selecting Adobe ColdFusion or Lucee, you'll be prompted to choose a version.
+This does not apply to the BoxLang engine.
 
 ###  Option 2: Using Makefile Direct Commands
 
@@ -72,6 +72,9 @@ make lucee-mysql
 make lucee-mariadb
 make lucee-postgres
 make lucee-mssql
+
+# Pick a Lucee version: 6.2, 7.1, 8.0 or latest (default)
+make lucee-mysql LUCEE_VERSION=8.0
 
 # BoxLang combinations
 make boxlang-mysql

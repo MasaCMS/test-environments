@@ -4,6 +4,10 @@
 	boxlang-mysql boxlang-mariadb boxlang-postgres boxlang-mssql \
 	adobe-mysql adobe-mariadb adobe-postgres adobe-mssql adobe-clear-cfclasses
 
+# Lucee image tag (latest, 8.0, ...), read by lucee/*/docker-compose.yml
+LUCEE_VERSION ?= latest
+export LUCEE_VERSION
+
 # Colors for output
 RED := \033[0;31m
 GREEN := \033[0;32m
@@ -52,6 +56,13 @@ help: ## Show this help message
 	@echo "  CF_VERSION=cf25     - ColdFusion 2025"
 	@echo "  CF_VERSION=latest   - Latest version"
 	@echo "  Example: make adobe-mysql CF_VERSION=cf25"
+	@echo ""
+	@echo "$(GREEN)Lucee version selection:$(NC)"
+	@echo "  LUCEE_VERSION=6.2    - Lucee 6.2"
+	@echo "  LUCEE_VERSION=7.1    - Lucee 7.1"
+	@echo "  LUCEE_VERSION=8.0    - Lucee 8.0"
+	@echo "  LUCEE_VERSION=latest - Latest version (default)"
+	@echo "  Example: make lucee-mysql LUCEE_VERSION=8.0"
 
 # Interactive start menu
 start:
@@ -81,7 +92,22 @@ start:
 	echo ""; \
 	read -p "Enter engine choice (1-3): " engine_choice; \
 	case $$engine_choice in \
-		1) ENGINE="lucee" ;; \
+		1) ENGINE="lucee"; \
+		   echo ""; \
+		   echo "$(GREEN)Select Lucee Version:$(NC)"; \
+		   echo "  1) Lucee 6.2"; \
+		   echo "  2) Lucee 7.1"; \
+		   echo "  3) Lucee 8.0"; \
+		   echo "  4) Latest"; \
+		   echo ""; \
+		   read -p "Enter version choice (1-4): " version_choice; \
+		   case $$version_choice in \
+		       1) LUCEE_VERSION="6.2" ;; \
+		       2) LUCEE_VERSION="7.1" ;; \
+		       3) LUCEE_VERSION="8.0" ;; \
+		       4) LUCEE_VERSION="latest" ;; \
+		       *) echo "$(RED)Invalid choice$(NC)"; exit 1 ;; \
+		   esac ;; \
 		2) ENGINE="boxlang" ;; \
 		3) ENGINE="adobe"; \
 		   echo ""; \
@@ -105,6 +131,9 @@ start:
 	if [ "$$ENGINE" = "adobe" ]; then \
 		echo "$(YELLOW)Starting $$DB database and Adobe ColdFusion $$CF_VERSION...$(NC)"; \
 		$(MAKE) $$ENGINE-$$DB CF_VERSION=$$CF_VERSION; \
+	elif [ "$$ENGINE" = "lucee" ]; then \
+		echo "$(YELLOW)Starting $$DB database and Lucee $$LUCEE_VERSION...$(NC)"; \
+		$(MAKE) $$ENGINE-$$DB LUCEE_VERSION=$$LUCEE_VERSION; \
 	else \
 		echo "$(YELLOW)Starting $$DB database and $$ENGINE engine...$(NC)"; \
 		$(MAKE) $$ENGINE-$$DB; \
