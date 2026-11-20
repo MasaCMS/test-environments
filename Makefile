@@ -3,7 +3,7 @@
 	lucee-mysql lucee-mariadb lucee-postgres lucee-mssql \
 	boxlang-mysql boxlang-mariadb boxlang-postgres boxlang-mssql \
 	adobe-mysql adobe-mariadb adobe-postgres adobe-mssql adobe-clear-cfclasses \
-	e2e e2e-all e2e-features e2e-report
+	start-env start-e2e e2e e2e-all e2e-features e2e-report
 
 # Lucee image tag (latest, 8.0, ...), read by lucee/*/docker-compose.yml
 LUCEE_VERSION ?= latest
@@ -24,7 +24,7 @@ help: ## Show this help message
 	@echo "$(CYAN)MasaCMS Test Environment Manager$(NC)"
 	@echo ""
 	@echo "$(GREEN)Available commands:$(NC)"
-	@echo "  make start          - Interactive menu to select DB and CF engine"
+	@echo "  make start          - Interactive menu: start an environment or run E2E tests"
 	@echo "  make stop           - Stop all running containers"
 	@echo "  make down           - Stop and remove all containers"
 	@echo "  make clean          - Remove all containers and volumes"
@@ -55,6 +55,17 @@ help: ## Show this help message
 	@echo "  make e2e ENGINE=lucee DB=mysql  - Run smoke tests on one combination"
 	@echo "  make e2e-all                    - One DB per engine (FULL=1 for all 12)"
 	@echo "  make e2e-features ENGINE=.. DB=..- Run the Gherkin features only"
+	@echo "  Options (all targets; comma separated lists allowed):"
+	@echo "    ENGINE=lucee,boxlang DB=mysql,postgres  - specific engine/DB combinations"
+	@echo "    FULL=1                                  - all engines x all DBs (e2e-all)"
+	@echo "    FEATURE=forms,security                  - specific feature folders (default: all)"
+	@echo "    TAG='@admin'                            - only scenarios with this tag"
+	@echo "    PROJECT=smoke,features                  - which test projects to run"
+	@echo "    LUCEE_VERSION=6.2|7.1|8.0|latest        - Lucee version (default: latest)"
+	@echo "    BROWSER=chromium|firefox|webkit         - browser engine (default: chromium)"
+	@echo "    HEADED=1                                - show the browser window (default: headless)"
+	@echo "    SHOW_REPORT=1                           - open the HTML report in the browser when done"
+	@echo "    Example: make e2e ENGINE=lucee DB=mysql,postgres FEATURE=forms"
 	@echo "  make e2e-report                 - Open the last HTML report"
 	@echo ""
 	@echo "$(GREEN)Adobe ColdFusion version selection:$(NC)"
@@ -71,8 +82,77 @@ help: ## Show this help message
 	@echo "  LUCEE_VERSION=latest - Latest version (default)"
 	@echo "  Example: make lucee-mysql LUCEE_VERSION=8.0"
 
-# Interactive start menu
+# Interactive start menu: start an environment or run the E2E tests
 start:
+	@echo "$(CYAN)╔════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║  MasaCMS Test Environment Manager      ║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════╝$(NC)"
+	@echo ""
+	@echo "$(GREEN)What do you want to do?$(NC)"
+	@echo "  1) Start a DB + CF engine environment"
+	@echo "  2) Run E2E tests"
+	@echo ""
+	@read -p "Enter choice (1-2): " mode; \
+	case $$mode in \
+		1) $(MAKE) --no-print-directory start-env ;; \
+		2) $(MAKE) --no-print-directory start-e2e ;; \
+		*) echo "$(RED)Invalid choice$(NC)"; exit 1 ;; \
+	esac
+
+# Interactive E2E selection: engines, databases and features
+start-e2e:
+	@echo ""; \
+	echo "$(GREEN)Select ColdFusion Engine:$(NC)"; \
+	echo "  1) Lucee"; echo "  2) BoxLang"; echo "  3) Adobe ColdFusion"; echo "  4) All engines"; echo ""; \
+	read -p "Enter engine choice (1-4): " ec; \
+	case $$ec in 1) E="lucee" ;; 2) E="boxlang" ;; 3) E="adobe" ;; 4) E="" ;; *) echo "$(RED)Invalid choice$(NC)"; exit 1 ;; esac; \
+	LV=""; \
+	if [ "$$E" = "lucee" ] || [ -z "$$E" ]; then \
+		echo ""; \
+		echo "$(GREEN)Select Lucee Version:$(NC)"; \
+		echo "  1) Lucee 6.2"; echo "  2) Lucee 7.1"; echo "  3) Lucee 8.0"; echo "  4) Latest"; echo ""; \
+		read -p "Enter version choice (1-4): " lc; \
+		case $$lc in 1) LV="6.2" ;; 2) LV="7.1" ;; 3) LV="8.0" ;; 4) LV="latest" ;; *) echo "$(RED)Invalid choice$(NC)"; exit 1 ;; esac; \
+	fi; \
+	echo ""; \
+	echo "$(GREEN)Select Database:$(NC)"; \
+	echo "  1) MySQL"; echo "  2) MariaDB"; echo "  3) PostgreSQL"; echo "  4) MSSQL"; \
+	echo "  5) One per engine (reduced matrix)"; echo "  6) All databases"; echo ""; \
+	read -p "Enter database choice (1-6): " dc; \
+	F=""; \
+	case $$dc in 1) D="mysql" ;; 2) D="mariadb" ;; 3) D="postgres" ;; 4) D="mssql" ;; 5) D="" ;; 6) D=""; F=1 ;; *) echo "$(RED)Invalid choice$(NC)"; exit 1 ;; esac; \
+	echo ""; \
+	echo "$(GREEN)Select tests:$(NC)"; \
+	echo "  1) Smoke tests only"; echo "  2) All features"; echo "  3) Specific features"; echo "  4) Smoke tests + all features"; echo ""; \
+	read -p "Enter test choice (1-4): " tc; \
+	P=""; FE=""; \
+	case $$tc in \
+		1) P="smoke" ;; \
+		2) P="features"; FE="all" ;; \
+		3) echo ""; echo "Available features:"; \
+		   for d in e2e-tests/features/*/; do n=$$(basename $$d); case $$n in steps|support) ;; *) echo "  $$n" ;; esac; done; \
+		   echo "  startup"; echo ""; \
+		   read -p "Features (comma separated): " FE; \
+		   [ -n "$$FE" ] || { echo "$(RED)No feature given$(NC)"; exit 1; } ;; \
+		4) P="smoke,features"; FE="all" ;; \
+		*) echo "$(RED)Invalid choice$(NC)"; exit 1 ;; \
+	esac; \
+	echo ""; \
+	echo "$(GREEN)Select browser:$(NC)"; \
+	echo "  1) Chromium"; echo "  2) Firefox"; echo "  3) WebKit"; echo ""; \
+	read -p "Enter browser choice (1-3): " bc; \
+	case $$bc in 1) B="chromium" ;; 2) B="firefox" ;; 3) B="webkit" ;; *) echo "$(RED)Invalid choice$(NC)"; exit 1 ;; esac; \
+	echo ""; \
+	read -p "Show the browser window (headed)? [y/N]: " hc; \
+	case $$hc in y|Y) H=1 ;; *) H="" ;; esac; \
+	read -p "Open the HTML report in the browser when done? [y/N]: " rc; \
+	case $$rc in y|Y) R=1 ;; *) R="" ;; esac; \
+	echo ""; \
+	echo "$(YELLOW)Running E2E: engine=$${E:-all} db=$${D:-default} features=$${FE:-none} browser=$$B headed=$${H:-no}$${LV:+ lucee=$$LV}$(NC)"; \
+	$(MAKE) --no-print-directory e2e-all $${LV:+LUCEE_VERSION=$$LV} ENGINE=$$E DB=$$D FULL=$$F PROJECT=$$P FEATURE=$$FE BROWSER=$$B HEADED=$$H SHOW_REPORT=$$R
+
+# Interactive environment start menu
+start-env:
 	@echo "$(CYAN)╔════════════════════════════════════════╗$(NC)"
 	@echo "$(CYAN)║  MasaCMS Test Environment Setup        ║$(NC)"
 	@echo "$(CYAN)╔════════════════════════════════════════╗$(NC)"
@@ -290,18 +370,29 @@ clean: down
 
 # E2E smoke tests (see README). Each run uses its own compose project and is
 # torn down afterwards. Set KEEP=1 to leave the environment running.
+# ENGINE/DB/FEATURE accept comma separated lists; FEATURE=all (or unset) runs every feature.
 e2e:
 	@if [ -z "$(ENGINE)" ] || [ -z "$(DB)" ]; then \
-		echo "$(RED)Usage: make e2e ENGINE=lucee|boxlang|adobe DB=mysql|mariadb|postgres|mssql$(NC)"; exit 1; \
+		echo "$(RED)Usage: make e2e ENGINE=lucee|boxlang|adobe DB=mysql|mariadb|postgres|mssql [FEATURE=forms,..] [TAG=@x]$(NC)"; exit 1; \
 	fi
-	@ENGINE=$(ENGINE) DB=$(DB) CF_VERSION=$(CF_VERSION) PROJECT=$(PROJECT) EVIDENCE=$(EVIDENCE) e2e-tests/scripts/e2e-matrix.sh
+	@ENGINE=$(ENGINE) DB=$(DB) CF_VERSION=$(CF_VERSION) PROJECT=$(PROJECT) FEATURE=$(FEATURE) TAG='$(TAG)' BROWSER=$(BROWSER) HEADED=$(HEADED) SHOW_REPORT=$(SHOW_REPORT) EVIDENCE=$(EVIDENCE) e2e-tests/scripts/e2e-matrix.sh
 
+# ENGINE and/or DB optional: narrows the matrix; FULL=1 for every DB per engine.
 e2e-all:
-	@CF_VERSION=$(CF_VERSION) FULL=$(FULL) PROJECT=$(PROJECT) EVIDENCE=$(EVIDENCE) e2e-tests/scripts/e2e-matrix.sh
+	@ENGINE=$(ENGINE) DB=$(DB) CF_VERSION=$(CF_VERSION) FULL=$(FULL) PROJECT=$(PROJECT) FEATURE=$(FEATURE) TAG='$(TAG)' BROWSER=$(BROWSER) HEADED=$(HEADED) SHOW_REPORT=$(SHOW_REPORT) EVIDENCE=$(EVIDENCE) e2e-tests/scripts/e2e-matrix.sh
 
 # Gherkin features only (PROJECT=smoke,features runs both).
 e2e-features:
-	@$(MAKE) e2e PROJECT=features ENGINE=$(ENGINE) DB=$(DB) CF_VERSION=$(CF_VERSION)
+	@$(MAKE) e2e PROJECT=features ENGINE=$(ENGINE) DB=$(DB) CF_VERSION=$(CF_VERSION) FEATURE=$(FEATURE) TAG='$(TAG)' BROWSER=$(BROWSER) HEADED=$(HEADED) SHOW_REPORT=$(SHOW_REPORT)
 
+# Opens REPORT=<dir>, else reports/<ENGINE>-<DB>/html, else the most recent report.
 e2e-report:
-	@cd e2e-tests && npx playwright show-report $(or $(REPORT),reports/$(ENGINE)-$(DB)/html)
+	@cd e2e-tests && \
+	if [ -n "$(REPORT)" ]; then dir="$(REPORT)"; \
+	elif [ -n "$(ENGINE)" ] && [ -n "$(DB)" ]; then dir="reports/$(ENGINE)-$(DB)/html"; \
+	else dir=$$(ls -t reports/*/html/index.html 2>/dev/null | head -1 | xargs -n1 dirname); fi; \
+	if [ -z "$$dir" ] || [ ! -f "$$dir/index.html" ]; then \
+		echo "$(RED)No report found (looked in $${dir:-e2e-tests/reports/*/html}). Run make e2e first.$(NC)"; exit 1; \
+	fi; \
+	echo "$(CYAN)Opening $$dir$(NC)"; \
+	npx playwright show-report "$$dir"

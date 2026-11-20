@@ -309,7 +309,32 @@ make e2e ENGINE=adobe DB=mysql CF_VERSION=cf25
 make e2e-all                            # one DB per engine (lucee/mysql, boxlang/postgres, adobe/mssql)
 FULL=1 make e2e-all                     # every engine x database
 KEEP=1 make e2e ENGINE=lucee DB=mysql   # keep the environment running afterwards
-make e2e-report ENGINE=lucee DB=mysql   # open the HTML report
+make e2e-report                         # open the most recent HTML report
+make e2e-report ENGINE=lucee DB=mysql   # open the report of one combination
+```
+
+#### Choosing what to run
+
+`make start` opens an interactive menu: pick "Run E2E tests" to choose the engine (or all), the database (one, one per engine, or all) and the tests (smoke, all features, or specific feature folders), the browser and whether to show it (headed). The same choices are available as options:
+
+| Option | Meaning |
+| --- | --- |
+| `ENGINE=lucee,boxlang` | Engines to run (comma separated; default: all) |
+| `DB=mysql,postgres` | Databases to run (comma separated; default: one per engine, or all with `FULL=1`) |
+| `FULL=1` | Every engine x database combination (`make e2e-all`) |
+| `PROJECT=smoke,features` | Test projects: `smoke` (default), `features`, or both |
+| `FEATURE=forms,security` | Feature folders under `e2e-tests/features/` (`startup` runs `startup.feature`). Implies `PROJECT=features`; unset or `all` runs every feature |
+| `LUCEE_VERSION=8.0` | Lucee version for Lucee runs: `6.2`, `7.1`, `8.0` or `latest` (default); asked in the menu when Lucee is included |
+| `BROWSER=firefox` | Browser engine: `chromium` (default), `firefox` or `webkit` (install once with `npx playwright install firefox`) |
+| `HEADED=1` | Show the browser window (default: headless) |
+| `SHOW_REPORT=1` | Open the HTML report of each combination in your browser when the run is done (screenshots and videos work; for the trace viewer use `make e2e-report`) |
+| `TAG='@admin'` | Only scenarios with this tag; expressions such as `'@forms and not @wip'` work |
+
+```bash
+make e2e ENGINE=lucee DB=mysql,postgres FEATURE=forms,security   # two DBs, two feature folders
+make e2e-all FULL=1 PROJECT=features                             # all 12 combinations, all features
+make e2e-all ENGINE=lucee,boxlang FEATURE=users                  # one DB per engine, users features
+make e2e-features ENGINE=adobe DB=mssql TAG=@admin               # tagged scenarios only
 ```
 
 A summary table is printed at the end and the exit code is non-zero if any combination fails. Everything a run produces is kept per combination in `e2e-tests/reports/<engine>-<db>/`:
@@ -327,6 +352,7 @@ Behavior-level tests are written as Cucumber `.feature` files in `e2e-tests/feat
 ```bash
 make e2e-features ENGINE=lucee DB=mysql          # features only
 make e2e ENGINE=lucee DB=mysql PROJECT=smoke,features   # both
+make e2e-features ENGINE=lucee DB=mysql FEATURE=forms    # selected feature folders only
 (cd e2e-tests && npm run test:features)          # against a running environment (BASE_URL)
 ```
 

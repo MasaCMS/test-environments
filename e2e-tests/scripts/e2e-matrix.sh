@@ -19,6 +19,14 @@
 #   CF_VERSION      Adobe ColdFusion version (default: cf23)
 #   TIMEOUT         seconds to wait for Masa to answer (default: 600)
 #   KEEP=1          do not tear down after the run (for debugging)
+#   PROJECT         smoke (default), features, or both comma separated
+#   FEATURE         feature folders to run, comma separated (e.g. forms,security;
+#                   startup for features/startup.feature). Implies PROJECT=features.
+#                   Unset or "all" runs every feature.
+#   TAG             only scenarios with this tag (e.g. @admin, "@forms and not @wip")
+#   BROWSER         chromium (default), firefox or webkit
+#   HEADED=1        show the browser window (default: headless)
+#   SHOW_REPORT=1   open the HTML report in the browser when the run is done
 
 set -u
 ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -108,12 +116,22 @@ run_combo() {
     status="FAIL"; detail="Masa did not answer within ${TIMEOUT}s"
   else
     # PROJECT: smoke (default), features, or both (comma separated).
+    # FEATURE selects feature folders and implies PROJECT=features.
     project_args=()
-    for pr in $(echo "${PROJECT:-smoke}" | tr ',' ' '); do project_args+=(--project "$pr"); done
+    default_project="smoke"
+    [ -n "${FEATURE:-}" ] && [ "${FEATURE}" != "all" ] && default_project="features"
+    for pr in $(echo "${PROJECT:-$default_project}" | tr ',' ' '); do project_args+=(--project "$pr"); done
+    filter_args=()
+    if [ -n "${FEATURE:-}" ] && [ "${FEATURE}" != "all" ]; then
+      for f in $(echo "$FEATURE" | tr ',' ' '); do filter_args+=("features/${f%.feature}(/|\\.feature)"); done
+    fi
+    [ -n "${TAG:-}" ] && filter_args+=(--grep "$TAG")
+    [ "${HEADED:-0}" = "1" ] && filter_args+=(--headed)
+    export BROWSER="${BROWSER:-chromium}"
     if ! ( cd "$E2E_DIR" && npx bddgen && \
            BASE_URL="http://localhost:$port" \
            PLAYWRIGHT_HTML_REPORT="reports/$engine-$db/html" \
-           npx playwright test "${project_args[@]}" --output "reports/$engine-$db/evidence" ); then
+           npx playwright test ${filter_args[@]+"${filter_args[@]}"} "${project_args[@]}" --output "reports/$engine-$db/evidence" ); then
       status="FAIL"; detail="see e2e-tests/reports/$engine-$db"
     fi
   fi
@@ -146,4 +164,15 @@ for r in "${results[@]}"; do
   IFS='|' read -r e d s x <<<"$r"
   printf '%-9s %-9s %-6s %s\n' "$e" "$d" "$s" "$x"
 done
+
+# SHOW_REPORT=1: open the HTML report of every combination that ran in the browser.
+if [ "${SHOW_REPORT:-0}" = "1" ]; then
+  opener="$(command -v open || command -v xdg-open || true)"
+  for r in "${results[@]}"; do
+    IFS='|' read -r e d s x <<<"$r"
+    [ "$s" = "SKIP" ] && continue
+    idx="$E2E_DIR/reports/$e-$d/html/index.html"
+    if [ -f "$idx" ] && [ -n "$opener" ]; then "$opener" "$idx"; fi
+  done
+fi
 [ "$failures" -eq 0 ]
