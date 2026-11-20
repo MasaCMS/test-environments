@@ -13,6 +13,7 @@ import { MailCatcher } from '../../lib/mail-catcher';
 import { ChangesetsPage } from './pages/changesets-page';
 import { BundlesPage } from './pages/bundles-page';
 import { SiteSearchPage } from './pages/site-search-page';
+import { RestApiPage } from './pages/rest-api-page';
 import { PluginsPage } from './pages/plugins-page';
 import { PublicFormPage } from './pages/public-form-page';
 import { LayoutManagerPage } from './pages/layout-manager-page';
@@ -93,6 +94,7 @@ export const test = base.extend<{
   changesets: ChangesetsPage;
   bundles: BundlesPage;
   siteSearch: SiteSearchPage;
+  restApi: RestApiPage;
   fileBrowser: FileBrowserPage;
   categories: CategoriesPage;
   emailSettings: EmailSettingsPage;
@@ -128,6 +130,7 @@ export const test = base.extend<{
     await use(new SiteSearchPage(await context.newPage()));
     await context.close();
   },
+  restApi: async ({ page, request }, use) => use(new RestApiPage(page, request)),
   fileBrowser: async ({ page }, use) => use(new FileBrowserPage(page)),
   categories: async ({ page }, use) => use(new CategoriesPage(page)),
   // The mail server of the site is a setting of the whole site; a scenario that changed it puts it back.
