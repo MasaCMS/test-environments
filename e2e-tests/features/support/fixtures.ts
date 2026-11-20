@@ -1,3 +1,4 @@
+import { Page } from '@playwright/test';
 import { test as base, createBdd } from 'playwright-bdd';
 import { ContentEditPage } from './pages/content-edit-page';
 import { AdminSession } from './pages/admin-session';
@@ -15,6 +16,7 @@ import { BundlesPage } from './pages/bundles-page';
 import { SiteSearchPage } from './pages/site-search-page';
 import { RestApiPage } from './pages/rest-api-page';
 import { CachingPage } from './pages/caching-page';
+import { LoginAttempts } from './pages/login-attempts';
 import { PluginsPage } from './pages/plugins-page';
 import { PublicFormPage } from './pages/public-form-page';
 import { LayoutManagerPage } from './pages/layout-manager-page';
@@ -97,6 +99,8 @@ export const test = base.extend<{
   siteSearch: SiteSearchPage;
   restApi: RestApiPage;
   caching: CachingPage;
+  loginAttempts: LoginAttempts;
+  visitorPage: Page;
   fileBrowser: FileBrowserPage;
   categories: CategoriesPage;
   emailSettings: EmailSettingsPage;
@@ -138,6 +142,13 @@ export const test = base.extend<{
     const caching = new CachingPage(page);
     await use(caching);
     if (caching.touched) await caching.setCaching(false).catch(() => {});
+  },
+  loginAttempts: async ({}, use) => use(new LoginAttempts()),
+  // The raw page of a public visitor, for checks that run script in the page.
+  visitorPage: async ({ browser, baseURL }, use) => {
+    const context = await browser.newContext({ baseURL });
+    await use(await context.newPage());
+    await context.close();
   },
   fileBrowser: async ({ page }, use) => use(new FileBrowserPage(page)),
   categories: async ({ page }, use) => use(new CategoriesPage(page)),
