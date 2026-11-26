@@ -13,11 +13,11 @@ Feature: Resource bundles
     Then the footer of the public site greets with the English bundle text
 
   Scenario: The bundle of the site's language is used
-    When I set the site locale to "dutch"
+    When I set the site locale to "Dutch"
     Then the footer of the public site greets with the Dutch bundle text
 
   Scenario: A key the language does not have falls back to English
-    When I set the site locale to "dutch"
+    When I set the site locale to "Dutch"
     Then the footer of the public site shows the English-only text
 
   Scenario: A key that no bundle has does not break the site
