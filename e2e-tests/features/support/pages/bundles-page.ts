@@ -42,8 +42,11 @@ export class BundlesPage {
     await this.page.getByRole('button', { name: 'Create Bundle' }).click();
     const [download] = await Promise.all([
       this.page.waitForEvent('download', { timeout: 120_000 }),
-      // Masa asks whether to create and download the bundle file.
-      this.page.getByRole('button', { name: 'Yes', exact: true }).click(),
+      // Masa asks whether to create and download the bundle file. Playwright waits for the
+      // resulting navigation before the click counts as done, and building the zip can take
+      // longer than the default action timeout (15 s on Lucee 8), so give the click as long
+      // as the download.
+      this.page.getByRole('button', { name: 'Yes', exact: true }).click({ timeout: 120_000 }),
     ]);
     const path = join(mkdtempSync(join(tmpdir(), 'masa-bundle-')), download.suggestedFilename());
     await download.saveAs(path);
